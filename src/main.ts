@@ -7,7 +7,19 @@ const bar = document.getElementById('loader-bar') as HTMLElement;
 const step = document.getElementById('loader-step') as HTMLElement;
 const loader = document.getElementById('loader') as HTMLElement;
 
-const nextFrame = () => new Promise<void>((r) => requestAnimationFrame(() => r()));
+// Background tabs pause animation frames, so fall back to a timer to keep loading.
+const nextFrame = () =>
+  new Promise<void>((r) => {
+    let done = false;
+    const finish = () => {
+      if (!done) {
+        done = true;
+        r();
+      }
+    };
+    requestAnimationFrame(finish);
+    setTimeout(finish, 60);
+  });
 
 function progress(pct: number, text: string): Promise<void> {
   bar.style.width = `${pct}%`;
