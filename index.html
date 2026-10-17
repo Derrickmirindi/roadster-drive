@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e0e0f" />
+    <meta
+      name="description"
+      content="Grid Roadster — drive, customise and time laps in an original stylised roadster in your browser. Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde."
+    />
+    <title>Grid Roadster — Test Drive</title>
+    <link rel="preload" href="fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230e0e0f'/%3E%3Crect x='6' y='18' width='20' height='4' fill='%23e0251b'/%3E%3C/svg%3E" />
+    <script type="importmap">
+      { "imports": { "three": "./vendor/three/three.module.min.js" } }
+    </script>
+  </head>
+  <body class="mode-showroom">
+    <a class="skip-link" href="#topbar-actions">Skip to controls</a>
+
+    <!-- Icon sprite (original line icons) -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
+      <symbol id="i-camera" viewBox="0 0 24 24"><path d="M3 7h4l2-2h6l2 2h4v12H3z" /><circle cx="12" cy="13" r="3.5" /></symbol>
+      <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8 5v14M16 5v14" /></symbol>
+      <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z" /></symbol>
+      <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7" /><path d="M4 4v4h4" /></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10" /><circle cx="16" cy="7" r="2" /><circle cx="8" cy="17" r="2" /></symbol>
+      <symbol id="i-paint" viewBox="0 0 24 24"><path d="M4 20l6-6M13 5l6 6-7 7-6-6z" /></symbol>
+      <symbol id="i-keys" viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" /><path d="M7 10h1M11 10h1M15 10h2M7 14h10" /></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7.5v.5" /></symbol>
+      <symbol id="i-left" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" /></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></symbol>
+      <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M17 9a4 4 0 0 1 0 6" /></symbol>
+      <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M17 9l4 6M21 9l-4 6" /></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></symbol>
+    </svg>
+
+    <div id="app" class="app" aria-busy="true">
+      <canvas id="scene" class="scene" tabindex="-1" aria-label="Three-dimensional view of the roadster and test circuit"></canvas>
+
+      <!-- Top bar -->
+      <header class="topbar grid">
+        <div class="brand">
+          <span class="brand__index" aria-hidden="true">01</span>
+          <div>
+            <p class="brand__name">Grid Roadster</p>
+            <p class="brand__meta">Test circuit · 1.84 km</p>
+          </div>
+        </div>
+        <nav class="modes" aria-label="Mode">
+          <button type="button" class="seg" id="mode-showroom" aria-pressed="true">Showroom</button>
+          <button type="button" class="seg" id="mode-drive" aria-pressed="false">Drive</button>
+        </nav>
+        <div class="actions" id="topbar-actions" role="toolbar" aria-label="Quick actions">
+          <button type="button" class="icon-btn" id="btn-panel" aria-expanded="false" aria-controls="panel">
+            <svg aria-hidden="true"><use href="#i-paint" /></svg><span class="label">Customise</span>
+          </button>
+          <button type="button" class="icon-btn drive-only" id="btn-camera" title="Change camera (C)">
+            <svg aria-hidden="true"><use href="#i-camera" /></svg><span class="label" id="camera-label">Chase</span>
+          </button>
+          <button type="button" class="icon-btn drive-only" id="btn-reset" title="Reset car (R)">
+            <svg aria-hidden="true"><use href="#i-reset" /></svg><span class="label">Reset</span>
+          </button>
+          <button type="button" class="icon-btn drive-only" id="btn-pause" title="Pause (P / Esc)">
+            <svg aria-hidden="true"><use href="#i-pause" /></svg><span class="label">Pause</span>
+          </button>
+          <button type="button" class="icon-btn" id="btn-mute" aria-pressed="false" title="Mute sound (M)">
+            <svg aria-hidden="true"><use href="#i-sound" /></svg><span class="label">Sound</span>
+          </button>
+          <button type="button" class="icon-btn" id="btn-settings" title="Settings">
+            <svg aria-hidden="true"><use href="#i-settings" /></svg><span class="label">Settings</span>
+          </button>
+          <button type="button" class="icon-btn" id="btn-help" title="Controls guide (?)">
+            <svg aria-hidden="true"><use href="#i-keys" /></svg><span class="label">Controls</span>
+          </button>
+          <button type="button" class="icon-btn" id="btn-about" title="About and credits">
+            <svg aria-hidden="true"><use href="#i-info" /></svg><span class="label">About</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Showroom intro -->
+      <section class="showroom-card showroom-only" aria-labelledby="showroom-title">
+        <p class="eyebrow">Showroom</p>
+        <h1 id="showroom-title" class="display"><span class="line">GR-1</span> <span class="line">Roadster</span></h1>
+        <p class="lede">An original open-top two-seater. Drag to orbit, scroll or pinch to zoom, then take it onto the circuit.</p>
+        <dl class="spec">
+          <div><dt>Power</dt><dd>Arcade model</dd></div>
+          <div><dt>0–100 km/h</dt><dd id="spec-accel">≈ 3.4 s</dd></div>
+          <div><dt>Top speed</dt><dd>270 km/h</dd></div>
+        </dl>
+        <div class="keys-mini" aria-label="Main driving keys">
+          <p class="eyebrow">Keys</p>
+          <ul>
+            <li><kbd>W</kbd><kbd>↑</kbd> Throttle</li>
+            <li><kbd>S</kbd><kbd>↓</kbd> Brake</li>
+            <li><kbd>A</kbd><kbd>D</kbd> Steer</li>
+            <li><kbd>G</kbd> Gear D / R</li>
+            <li><kbd>Space</kbd> Handbrake</li>
+            <li><kbd>C</kbd> Camera</li>
+          </ul>
+        </div>
+        <button type="button" class="btn btn--primary btn--wide" id="btn-start">Start driving</button>
+      </section>
+
+      <!-- Drive HUD -->
+      <section class="hud drive-only" aria-label="Instruments">
+        <div class="speedo">
+          <p class="eyebrow">Speed</p>
+          <p class="speedo__value"><span id="hud-speed">0</span><span class="speedo__unit" id="hud-unit">km/h</span></p>
+          <div class="speedo__row">
+            <p class="gear" aria-label="Gear"><span class="gear__d" id="gear-d" data-on="true">D</span><span class="gear__r" id="gear-r">R</span></p>
+            <p class="meta"><span class="eyebrow">Limit</span> <span id="hud-limit">180</span></p>
+            <p class="meta"><span class="eyebrow">Cruise</span> <span id="hud-cruise">Off</span></p>
+          </div>
+          <div class="limitbar" aria-hidden="true"><span id="hud-speedbar"></span><i id="hud-limitmark"></i></div>
+        </div>
+        <div class="laps">
+          <div><p class="eyebrow">Lap</p><p class="laps__value" id="lap-current">—</p></div>
+          <div><p class="eyebrow">Last</p><p class="laps__value laps__value--small" id="lap-last">—</p></div>
+          <div><p class="eyebrow">Best</p><p class="laps__value laps__value--small" id="lap-best">—</p></div>
+          <div><p class="eyebrow">Sector</p><p class="laps__value laps__value--small" id="lap-sector">–/8</p></div>
+        </div>
+      </section>
+      <canvas id="minimap" class="minimap drive-only" width="160" height="160" role="img" aria-label="Minimap of the circuit showing the car position"></canvas>
+
+      <!-- Customisation / driving panel -->
+      <aside id="panel" class="panel" hidden aria-label="Customise">
+        <div class="panel__head">
+          <div class="tabs" role="tablist" aria-label="Panel sections">
+            <button type="button" role="tab" class="tab" id="tab-look" aria-selected="true" aria-controls="tp-look">Appearance</button>
+            <button type="button" role="tab" class="tab" id="tab-drive" aria-selected="false" aria-controls="tp-drive" tabindex="-1">Driving</button>
+          </div>
+          <button type="button" class="icon-btn icon-btn--bare" id="panel-close" aria-label="Close panel"><svg aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+
+        <div class="panel__body" role="tabpanel" id="tp-look" aria-labelledby="tab-look">
+          <fieldset class="group">
+            <legend class="eyebrow">Body colour</legend>
+            <div class="swatches" id="body-swatches"></div>
+            <label class="picker">
+              <span>Custom</span>
+              <input type="color" id="body-color" value="#a3141c" />
+              <output id="body-hex">#A3141C</output>
+            </label>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Finish</legend>
+            <div class="segmented" id="finish">
+              <label><input type="radio" name="finish" value="gloss" checked /><span>Gloss</span></label>
+              <label><input type="radio" name="finish" value="metallic" /><span>Metallic</span></label>
+              <label><input type="radio" name="finish" value="matte" /><span>Matte</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Wheel colour</legend>
+            <div class="swatches swatches--small" id="wheel-swatches"></div>
+            <label class="picker">
+              <span>Custom</span>
+              <input type="color" id="wheel-color" value="#3a3b3d" />
+              <output id="wheel-hex">#3A3B3D</output>
+            </label>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Lighting</legend>
+            <label class="switch"><input type="checkbox" id="headlights" checked /><span>Headlights <small>(L)</small></span></label>
+            <div class="segmented" id="daynight">
+              <label><input type="radio" name="time" value="day" checked /><span>Day</span></label>
+              <label><input type="radio" name="time" value="night" /><span>Night</span></label>
+            </div>
+          </fieldset>
+          <button type="button" class="btn btn--ghost" id="reset-look">Reset appearance</button>
+        </div>
+
+        <div class="panel__body" role="tabpanel" id="tp-drive" aria-labelledby="tab-drive" hidden>
+          <fieldset class="group">
+            <legend class="eyebrow">Speed units</legend>
+            <div class="segmented" id="units">
+              <label><input type="radio" name="units" value="kmh" checked /><span>km/h</span></label>
+              <label><input type="radio" name="units" value="mph" /><span>mph</span></label>
+            </div>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Maximum speed limit</legend>
+            <label class="range">
+              <span class="sr-only">Maximum speed limit</span>
+              <input type="range" id="speed-limit" min="30" max="270" step="5" value="180" aria-describedby="limit-help" />
+              <output id="speed-limit-out" for="speed-limit">180 km/h</output>
+            </label>
+            <p class="help" id="limit-help">Caps engine power. Lowering it below your current speed eases the car down gradually — it never snaps.</p>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Cruise control</legend>
+            <div class="row">
+              <button type="button" class="btn btn--ghost" id="cruise-toggle" aria-pressed="false">Engage (K)</button>
+              <button type="button" class="btn btn--ghost btn--square" id="cruise-down" aria-label="Lower cruise target">−</button>
+              <button type="button" class="btn btn--ghost btn--square" id="cruise-up" aria-label="Raise cruise target">+</button>
+            </div>
+            <p class="help">Engages at your current speed (20 km/h or more, gear D) and holds it gently. Braking or the handbrake disengages it. <kbd>[</kbd> <kbd>]</kbd> adjust the target.</p>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Gear</legend>
+            <div class="row">
+              <button type="button" class="btn btn--ghost" id="gear-toggle">Select reverse (G)</button>
+            </div>
+            <p class="help">Gear changes are accepted only when the car is almost stopped (below 2 km/h).</p>
+          </fieldset>
+        </div>
+      </aside>
+
+      <!-- Touch controls -->
+      <div class="touch" id="touch" hidden>
+        <div class="touch__steer">
+          <button type="button" class="tbtn tbtn--steer" id="t-left" aria-label="Steer left"><svg aria-hidden="true"><use href="#i-left" /></svg></button>
+          <button type="button" class="tbtn tbtn--steer" id="t-right" aria-label="Steer right"><svg aria-hidden="true"><use href="#i-right" /></svg></button>
+        </div>
+        <div class="touch__pedals">
+          <div class="touch__aux">
+            <button type="button" class="tbtn tbtn--small" id="t-gear" aria-label="Toggle gear between drive and reverse">D</button>
+            <button type="button" class="tbtn tbtn--small" id="t-hand" aria-label="Handbrake">HB</button>
+          </div>
+          <button type="button" class="tbtn tbtn--brake" id="t-brake" aria-label="Brake">Brake</button>
+          <button type="button" class="tbtn tbtn--gas" id="t-gas" aria-label="Throttle">Gas</button>
+        </div>
+      </div>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+      <footer class="credit">
+        <p><span class="credit__app">Grid Roadster</span><span class="credit__sep" aria-hidden="true"> · </span><span class="credit__names">Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde</span></p>
+      </footer>
+    </div>
+
+    <!-- Pause dialog -->
+    <dialog id="dlg-pause" class="dialog" aria-labelledby="pause-title">
+      <div class="dialog__inner">
+        <p class="eyebrow">Paused</p>
+        <h2 id="pause-title" class="dialog__title">Simulation paused</h2>
+        <p class="help" id="pause-summary"></p>
+        <div class="stack">
+          <button type="button" class="btn btn--primary" id="p-resume">Resume</button>
+          <button type="button" class="btn btn--ghost" id="p-reset">Reset car to track</button>
+          <button type="button" class="btn btn--ghost" id="p-showroom">Back to showroom</button>
+          <button type="button" class="btn btn--ghost" id="p-help">Controls guide</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Settings dialog -->
+    <dialog id="dlg-settings" class="dialog dialog--wide" aria-labelledby="settings-title">
+      <form method="dialog" class="dialog__inner">
+        <div class="dialog__head">
+          <h2 id="settings-title" class="dialog__title">Settings</h2>
+          <button class="icon-btn icon-btn--bare" value="close" aria-label="Close settings"><svg aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="cols">
+          <fieldset class="group">
+            <legend class="eyebrow">Graphics</legend>
+            <label class="field">
+              <span>Quality</span>
+              <select id="s-quality">
+                <option value="auto">Auto (adapts to device)</option>
+                <option value="low">Low — no shadows, lower resolution</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+            <p class="help" id="s-quality-status"></p>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Comfort &amp; effects</legend>
+            <label class="switch"><input type="checkbox" id="s-shake" /><span>Camera shake on impacts</span></label>
+            <label class="switch"><input type="checkbox" id="s-fov" /><span>Speed field-of-view widening</span></label>
+            <label class="field">
+              <span>Reduced motion</span>
+              <select id="s-motion">
+                <option value="system">Follow system setting</option>
+                <option value="on">On — instant camera cuts, no effects</option>
+                <option value="off">Off</option>
+              </select>
+            </label>
+            <p class="help">No motion blur is used. Reduced motion disables shake, field-of-view changes, camera blends and interface transitions.</p>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Controls</legend>
+            <label class="field">
+              <span>On-screen touch controls</span>
+              <select id="s-touch">
+                <option value="auto">Auto (touch devices)</option>
+                <option value="on">Always show</option>
+                <option value="off">Hide</option>
+              </select>
+            </label>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Audio</legend>
+            <label class="switch"><input type="checkbox" id="s-audio" /><span>Sound effects (synthesised)</span></label>
+            <label class="range">
+              <span>Volume</span>
+              <input type="range" id="s-volume" min="0" max="100" step="5" />
+              <output id="s-volume-out" for="s-volume"></output>
+            </label>
+            <label class="switch"><input type="checkbox" id="s-muted" /><span>Muted <small>(M)</small></span></label>
+            <p class="help">Sound starts only after you interact with the page.</p>
+          </fieldset>
+          <fieldset class="group">
+            <legend class="eyebrow">Records</legend>
+            <p class="record"><span>Best lap (this browser)</span> <strong id="s-best">—</strong></p>
+            <button type="button" class="btn btn--ghost" id="s-reset-best">Reset best lap</button>
+          </fieldset>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Controls guide -->
+    <dialog id="dlg-help" class="dialog dialog--wide" aria-labelledby="help-title">
+      <form method="dialog" class="dialog__inner">
+        <div class="dialog__head">
+          <h2 id="help-title" class="dialog__title">Controls guide</h2>
+          <button class="icon-btn icon-btn--bare" value="close" aria-label="Close controls guide"><svg aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <div class="cols">
+          <section>
+            <h3 class="eyebrow">Keyboard</h3>
+            <table class="keys">
+              <tbody>
+                <tr><th scope="row"><kbd>W</kbd> / <kbd>↑</kbd></th><td>Throttle (moves in the selected gear)</td></tr>
+                <tr><th scope="row"><kbd>S</kbd> / <kbd>↓</kbd></th><td>Brake — stops the car, never reverses it</td></tr>
+                <tr><th scope="row"><kbd>A</kbd> / <kbd>←</kbd>, <kbd>D</kbd> / <kbd>→</kbd></th><td>Steer left / right</td></tr>
+                <tr><th scope="row"><kbd>G</kbd></th><td>Toggle gear Drive / Reverse (below 2 km/h)</td></tr>
+                <tr><th scope="row"><kbd>Space</kbd></th><td>Handbrake (the rear can slide)</td></tr>
+                <tr><th scope="row"><kbd>K</kbd></th><td>Cruise control on / off; <kbd>[</kbd> <kbd>]</kbd> adjust target</td></tr>
+                <tr><th scope="row"><kbd>C</kbd></th><td>Change camera: chase → hood → overhead</td></tr>
+                <tr><th scope="row"><kbd>R</kbd></th><td>Reset the car onto the track</td></tr>
+                <tr><th scope="row"><kbd>P</kbd> / <kbd>Esc</kbd></th><td>Pause / resume</td></tr>
+                <tr><th scope="row"><kbd>L</kbd></th><td>Headlights</td></tr>
+                <tr><th scope="row"><kbd>U</kbd></th><td>Switch km/h / mph</td></tr>
+                <tr><th scope="row"><kbd>M</kbd></th><td>Mute</td></tr>
+                <tr><th scope="row"><kbd>?</kbd></th><td>This guide</td></tr>
+              </tbody>
+            </table>
+            <p class="help">Driving keys are ignored while you are typing in a field or a dialog is open. Showroom: arrow keys orbit and zoom when the view has focus.</p>
+          </section>
+          <section>
+            <h3 class="eyebrow">Touch</h3>
+            <ul class="plain">
+              <li><strong>◀ ▶</strong> large steering buttons, bottom left.</li>
+              <li><strong>Gas</strong> and <strong>Brake</strong> pedals, bottom right. Steer and accelerate at the same time with two fingers.</li>
+              <li><strong>D / R</strong> selects reverse when stopped. <strong>HB</strong> is the handbrake.</li>
+              <li>Camera, Reset and Pause are in the top bar.</li>
+              <li>Showroom: drag to orbit, pinch to zoom.</li>
+            </ul>
+            <h3 class="eyebrow">Laps</h3>
+            <p class="help">The circuit has 7 checkpoints plus the start/finish line. A lap only counts when every checkpoint is crossed in order. Resetting the car voids the current lap. Times use simulation time, so pausing does not affect them.</p>
+            <h3 class="eyebrow">Handling</h3>
+            <p class="help">An arcade-style simulation, not a validated vehicle-physics model. Steering becomes less aggressive at speed; grass slows the car and reduces grip.</p>
+          </section>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- About -->
+    <dialog id="dlg-about" class="dialog dialog--wide" aria-labelledby="about-title">
+      <form method="dialog" class="dialog__inner">
+        <div class="dialog__head">
+          <h2 id="about-title" class="dialog__title">About &amp; credits</h2>
+          <button class="icon-btn icon-btn--bare" value="close" aria-label="Close about"><svg aria-hidden="true"><use href="#i-close" /></svg></button>
+        </div>
+        <p class="credit-block">Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde</p>
+        <div class="cols">
+          <section>
+            <h3 class="eyebrow">The application</h3>
+            <p class="help">Grid Roadster is an original browser driving application inspired by interactive vehicle showcases. The car, circuit, interface, textures and sounds are generated in code for this project; no third-party vehicle model, branding or audio is used.</p>
+            <h3 class="eyebrow">Accessibility</h3>
+            <p class="help">Menus, settings and dialogs work with a keyboard and screen readers, with visible focus and reduced-motion support. Driving itself is a visual experience and is not accessible without sight.</p>
+          </section>
+          <section>
+            <h3 class="eyebrow">Open-source components</h3>
+            <ul class="plain">
+              <li><strong>Three.js r185</strong> — MIT License, © 2010–2026 Three.js authors.</li>
+              <li><strong>Inter</strong> typeface — SIL Open Font License 1.1, © The Inter Project Authors.</li>
+            </ul>
+            <p class="help">Full licence texts ship with the application in <code>vendor/three/LICENSE.txt</code> and <code>fonts/Inter-OFL.txt</code>.</p>
+          </section>
+        </div>
+      </form>
+    </dialog>
+
+    <!-- Loading & errors -->
+    <div class="overlay" id="loader" role="status" aria-live="polite">
+      <div class="overlay__inner">
+        <p class="eyebrow">Grid Roadster</p>
+        <p class="overlay__title">Loading</p>
+        <div class="progress" aria-hidden="true"><span id="loader-bar"></span></div>
+        <p class="help" id="loader-step">Starting…</p>
+      </div>
+      <p class="overlay__credit">Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde</p>
+    </div>
+    <div class="overlay" id="fatal" hidden role="alert">
+      <div class="overlay__inner">
+        <p class="eyebrow">Grid Roadster</p>
+        <p class="overlay__title" id="fatal-title">3D graphics unavailable</p>
+        <p class="help" id="fatal-text">This browser or device could not start WebGL 2, which the driving view needs.</p>
+        <ul class="plain help" id="fatal-tips">
+          <li>Use a recent version of Chrome, Edge, Firefox or Safari.</li>
+          <li>Turn on hardware acceleration in your browser settings.</li>
+          <li>Update your graphics drivers, or try another device.</li>
+        </ul>
+        <button type="button" class="btn btn--primary" id="fatal-retry">Try again</button>
+      </div>
+      <p class="overlay__credit">Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde</p>
+    </div>
+    <noscript>
+      <div class="overlay"><div class="overlay__inner"><p class="overlay__title">JavaScript required</p><p class="help">Grid Roadster needs JavaScript and WebGL 2.</p></div><p class="overlay__credit">Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde</p></div>
+    </noscript>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

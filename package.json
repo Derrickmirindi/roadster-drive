@@ -1,0 +1,21 @@
+{
+  "name": "grid-roadster",
+  "version": "1.0.0",
+  "description": "An original browser driving application: drive, customise and time laps in a stylised roadster. Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "scripts": {
+    "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
+    "preview": "node scripts/serve.mjs dist 4173",
+    "test": "node --test tests/simulation.test.mjs",
+    "test:e2e": "node tests/e2e/run.mjs"
+  },
+  "devDependencies": {
+    "@types/three": ">=0.180.0 <0.186.0",
+    "typescript": ">=5.6.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

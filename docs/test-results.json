@@ -1,0 +1,289 @@
+{
+  "date": "2026-10-17T04:41:19.345Z",
+  "base": "http://localhost:4173/",
+  "environment": "Headless Chromium bundled with Playwright 1.56 with SwiftShader software WebGL, Linux container",
+  "results": [
+    {
+      "name": "Loads without errors; loader hides",
+      "ok": true,
+      "detail": "no console errors or page errors",
+      "ms": 0
+    },
+    {
+      "name": "Exact creator credit visible in footer",
+      "ok": true,
+      "detail": "\"Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde\" at y=876",
+      "ms": 39
+    },
+    {
+      "name": "Render loop idles in showroom when nothing changes",
+      "ok": true,
+      "detail": "no continuous rAF while idle",
+      "ms": 1205
+    },
+    {
+      "name": "Showroom orbit: drag rotates, wheel zooms",
+      "ok": true,
+      "detail": "orbit camera responds (visual check in screenshot)",
+      "ms": 588
+    },
+    {
+      "name": "About / Credits panel shows exact credit",
+      "ok": true,
+      "detail": "dialog closes with Escape",
+      "ms": 19727
+    },
+    {
+      "name": "Paint: swatch updates body material only",
+      "ok": true,
+      "detail": "body #1f3f8f; glass and wheels unchanged",
+      "ms": 281
+    },
+    {
+      "name": "Custom colour picker updates immediately",
+      "ok": true,
+      "detail": "#22aa66",
+      "ms": 22
+    },
+    {
+      "name": "Finish options change the paint material",
+      "ok": true,
+      "detail": "matte rough=0.82, metallic metal=0.72",
+      "ms": 220
+    },
+    {
+      "name": "Separate wheel colour",
+      "ok": true,
+      "detail": "#8a6a3a",
+      "ms": 32
+    },
+    {
+      "name": "Headlights toggle",
+      "ok": true,
+      "detail": "off 0,0 \u2192 on 25,25",
+      "ms": 599
+    },
+    {
+      "name": "Reset appearance restores crimson gloss",
+      "ok": true,
+      "detail": "#a3141c",
+      "ms": 53
+    },
+    {
+      "name": "Night mode renders with headlights",
+      "ok": true,
+      "detail": "screenshot desktop-night-showroom.png",
+      "ms": 3342
+    },
+    {
+      "name": "Start driving switches to Drive mode",
+      "ok": true,
+      "detail": "mode=drive, camera=chase",
+      "ms": 626
+    },
+    {
+      "name": "Throttle accelerates (speed derived from velocity)",
+      "ok": true,
+      "detail": "38.6 km/h, HUD shows 39",
+      "ms": 16171
+    },
+    {
+      "name": "Steering changes heading",
+      "ok": true,
+      "detail": "A: +0.147 rad, D: -0.141 rad",
+      "ms": 3046
+    },
+    {
+      "name": "Brake stops the car without reversing",
+      "ok": true,
+      "detail": "stopped (v=0.000), stays in D, holding brake does not reverse",
+      "ms": 9929
+    },
+    {
+      "name": "Gear change refused while moving",
+      "ok": true,
+      "detail": "stays in D at 54 km/h",
+      "ms": 5
+    },
+    {
+      "name": "Reverse via explicit gear selection",
+      "ok": true,
+      "detail": "reversing at -7.4 km/h, back to D after stopping",
+      "ms": 1628
+    },
+    {
+      "name": "Handbrake makes the car slide",
+      "ok": true,
+      "detail": "heading after handbrake turn 1.56 rad (slip verified in unit tests)",
+      "ms": 710
+    },
+    {
+      "name": "Speed limit slider changes the limit, not the speed",
+      "ok": true,
+      "detail": "108 \u2192 108 immediately, 102 km/h later; slider shows \"50 km/h\"",
+      "ms": 5793
+    },
+    {
+      "name": "Units switch to mph",
+      "ok": true,
+      "detail": "km/h \u2194 mph",
+      "ms": 5955
+    },
+    {
+      "name": "Cruise control engages, holds, disengages on brake",
+      "ok": true,
+      "detail": "target 72 km/h, held at 72, off after brake",
+      "ms": 5077
+    },
+    {
+      "name": "Camera cycles chase \u2192 hood \u2192 overhead \u2192 chase",
+      "ok": true,
+      "detail": "hood \u2192 overhead \u2192 chase",
+      "ms": 31835
+    },
+    {
+      "name": "Barrier keeps the car inside the circuit",
+      "ok": true,
+      "detail": "hit the wall; max distance from centre 16.05 m (wall face at 17 m, car half-width 0.95 m)",
+      "ms": 707
+    },
+    {
+      "name": "Reset returns the car to the road",
+      "ok": true,
+      "detail": "lateral 0.00 m, speed 0",
+      "ms": 5
+    },
+    {
+      "name": "Lap timer starts at the line; shortcut lap is voided",
+      "ok": true,
+      "detail": "running=true, laps counted=0",
+      "ms": 5431
+    },
+    {
+      "name": "Pause freezes simulation and stops the render loop",
+      "ok": true,
+      "detail": "frozen, loop stopped, Escape resumes",
+      "ms": 12263
+    },
+    {
+      "name": "Window blur releases held keys (no stuck throttle)",
+      "ok": true,
+      "detail": "throttle released (0); paused=false",
+      "ms": 529
+    },
+    {
+      "name": "Keys ignored while typing in a colour field",
+      "ok": true,
+      "detail": "throttle=0, camera unchanged (chase)",
+      "ms": 5140
+    },
+    {
+      "name": "Frame-rate independence (30 / 60 / 144 fps)",
+      "ok": true,
+      "detail": "30 fps: 150.96 km/h, 60 fps: 150.96 km/h, 144 fps: 150.81 km/h",
+      "ms": 14
+    },
+    {
+      "name": "Back to showroom",
+      "ok": true,
+      "detail": "car parked, orbit camera",
+      "ms": 2222
+    },
+    {
+      "name": "Controls guide opens and is keyboard reachable",
+      "ok": true,
+      "detail": "? opens guide",
+      "ms": 10764
+    },
+    {
+      "name": "No runtime errors during desktop session",
+      "ok": true,
+      "detail": "none",
+      "ms": 0
+    },
+    {
+      "name": "Layout 390px: credit readable and no horizontal overflow",
+      "ok": true,
+      "detail": "font 11px",
+      "ms": 10
+    },
+    {
+      "name": "Touch controls visible at 390px",
+      "ok": true,
+      "detail": "76\u00d776, 76\u00d776, 76\u00d7116, 72\u00d776, 52\u00d748, 52\u00d748",
+      "ms": 278
+    },
+    {
+      "name": "Mobile multi-touch: steer + throttle together, release on cancel/end",
+      "ok": true,
+      "detail": "steer+gas held together (speed 7.4 km/h); independent release; cancel clears",
+      "ms": 8918
+    },
+    {
+      "name": "Mobile reverse, camera, pause, reset buttons",
+      "ok": true,
+      "detail": "gear R, camera hood, paused true",
+      "ms": 11317
+    },
+    {
+      "name": "No runtime errors at 390px",
+      "ok": true,
+      "detail": "none",
+      "ms": 0
+    },
+    {
+      "name": "Layout 768px: credit readable and no horizontal overflow",
+      "ok": true,
+      "detail": "font 13px",
+      "ms": 4
+    },
+    {
+      "name": "Touch controls visible at 768px",
+      "ok": true,
+      "detail": "84\u00d784, 84\u00d784, 84\u00d7128, 84\u00d784, 56\u00d748, 56\u00d748",
+      "ms": 60
+    },
+    {
+      "name": "No runtime errors at 768px",
+      "ok": true,
+      "detail": "none",
+      "ms": 0
+    },
+    {
+      "name": "Layout 844px: credit readable and no horizontal overflow",
+      "ok": true,
+      "detail": "font 13px",
+      "ms": 4
+    },
+    {
+      "name": "Touch controls visible at 844px",
+      "ok": true,
+      "detail": "84\u00d784, 84\u00d784, 84\u00d7128, 84\u00d784, 56\u00d748, 56\u00d748",
+      "ms": 46
+    },
+    {
+      "name": "No runtime errors at 844px",
+      "ok": true,
+      "detail": "none",
+      "ms": 0
+    },
+    {
+      "name": "Layout 1440px: credit readable and no horizontal overflow",
+      "ok": true,
+      "detail": "font 13px",
+      "ms": 2
+    },
+    {
+      "name": "No runtime errors at 1440px",
+      "ok": true,
+      "detail": "none",
+      "ms": 0
+    },
+    {
+      "name": "WebGL-unavailable screen with credit",
+      "ok": true,
+      "detail": "fallback screen shown",
+      "ms": 125
+    }
+  ]
+}
