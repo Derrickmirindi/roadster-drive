@@ -1898,3 +1898,19 @@ select {
     font-size: var(--t-xs);
   }
 }
+
+/* Drive mode adds Flight, Camera, Reset and Pause: show icons only below 1360 px. */
+@media (max-width: 1360px) {
+  .mode-drive .icon-btn .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .mode-drive .icon-btn {
+    padding: 0;
+    width: 40px;
+    justify-content: center;
+  }
+}
