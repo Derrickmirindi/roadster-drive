@@ -8,7 +8,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json && node scripts/copy-static.mjs",
     "preview": "node scripts/serve.mjs dist 4173",
-    "test": "node --test tests/simulation.test.mjs",
+    "test": "node --test tests/simulation.test.mjs tests/stunt.test.mjs",
     "test:e2e": "node tests/e2e/run.mjs"
   },
   "devDependencies": {

@@ -51,6 +51,7 @@
         <nav class="modes" aria-label="Mode">
           <button type="button" class="seg" id="mode-showroom" aria-pressed="true">Showroom</button>
           <button type="button" class="seg" id="mode-drive" aria-pressed="false">Drive</button>
+          <button type="button" class="seg" id="mode-stunt" aria-pressed="false">Stunt lab</button>
         </nav>
         <div class="actions" id="topbar-actions" role="toolbar" aria-label="Quick actions">
           <button type="button" class="icon-btn" id="btn-panel" aria-expanded="false" aria-controls="panel">
@@ -225,6 +226,98 @@
         </div>
       </div>
 
+
+      <!-- Stunt Lab -->
+      <nav class="stunt-controls stunt-only" aria-label="Stunt lab scene controls">
+        <label class="st-select">
+          <span class="eyebrow">Vehicle</span>
+          <select id="st-vehicle" aria-label="Vehicle"></select>
+        </label>
+        <div class="segbar" role="group" aria-label="Camera">
+          <button type="button" class="seg seg--sm" data-st-camera="follow" aria-pressed="true">Follow</button>
+          <button type="button" class="seg seg--sm" data-st-camera="wide" aria-pressed="false">Wide</button>
+          <button type="button" class="seg seg--sm" data-st-camera="orbit" aria-pressed="false">Orbit</button>
+        </div>
+        <div class="segbar" role="group" aria-label="Overlays">
+          <button type="button" class="seg seg--sm" id="st-cutaway" aria-pressed="false" title="Show the fan-and-jet rig inside the body">Cutaway</button>
+          <button type="button" class="seg seg--sm" id="st-path" aria-pressed="false" title="Show the full path of both trials">Path</button>
+          <button type="button" class="seg seg--sm" id="st-arrows" aria-pressed="true" title="Force arrows in the scene">Arrows</button>
+        </div>
+      </nav>
+
+      <aside class="stunt-panel stunt-only" id="st-panel" data-open="false" aria-label="Forces and vehicle physics">
+        <div class="st-head">
+          <div>
+            <p class="eyebrow">Forces · <span id="st-vehicle-name">Roadster</span></p>
+            <p class="st-state" id="st-state" aria-live="polite">On the ground</p>
+          </div>
+          <button type="button" class="icon-btn icon-btn--bare st-panel-toggle" id="st-panel-toggle" aria-expanded="false" aria-controls="st-panel-body" aria-label="Show or hide details">
+            <svg aria-hidden="true"><use href="#i-info" /></svg>
+          </button>
+        </div>
+        <div class="st-diagram-wrap">
+          <svg id="st-diagram" viewBox="-100 -100 200 200" role="img" aria-label="Free-body diagram">
+            <defs>
+              <marker id="st-arrow-gravity" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#d9b36c" /></marker>
+              <marker id="st-arrow-suction" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#6fb7d6" /></marker>
+              <marker id="st-arrow-contact" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#d7dde2" /></marker>
+              <marker id="st-arrow-tire" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#7fbf8f" /></marker>
+              <marker id="st-arrow-thrust" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#e0251b" /></marker>
+              <marker id="st-arrow-torque" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#a98fd8" /></marker>
+            </defs>
+            <path d="M-96 0H96M0 -96V96" stroke="rgba(242,239,232,.12)" stroke-dasharray="2 6" />
+            <g id="st-body">
+              <rect x="-30" y="-14" width="60" height="16" fill="rgba(242,239,232,.08)" stroke="rgba(242,239,232,.55)" />
+              <rect x="-10" y="-22" width="22" height="8" fill="rgba(242,239,232,.04)" stroke="rgba(242,239,232,.35)" />
+              <circle cx="-18" cy="4" r="6" fill="#18191b" stroke="rgba(242,239,232,.5)" />
+              <circle cx="18" cy="4" r="6" fill="#18191b" stroke="rgba(242,239,232,.5)" />
+            </g>
+            <g id="st-arrows"></g>
+            <path id="st-torque" d="M-34 30 A44 44 0 1 1 30 34" stroke="#a98fd8" stroke-width="2" fill="none" marker-end="url(#st-arrow-torque)" opacity="0" />
+            <circle r="2.5" fill="#f2efe8" />
+          </svg>
+          <div class="st-forces" id="st-forces"></div>
+        </div>
+        <div class="st-body" id="st-panel-body">
+          <div class="st-mass"><strong id="st-mass">2,000 kg total</strong><span id="st-rig">350 kg shared rig included</span></div>
+          <dl class="st-grid" aria-label="Static force limits">
+            <div><dt>Wall hold</dt><dd id="st-wall">Holds</dd></div>
+            <div><dt>Ceiling hold</dt><dd id="st-ceiling">Holds</dd></div>
+            <div><dt>Lift-off</dt><dd id="st-lift">Lifts</dd></div>
+          </dl>
+          <dl class="st-grid" aria-label="Live motion">
+            <div><dt>Height</dt><dd id="st-height">0.0 m</dd></div>
+            <div><dt>Vertical</dt><dd id="st-vertical">0.0 m/s</dd></div>
+            <div><dt>Roll</dt><dd id="st-roll">0.00 turns</dd></div>
+          </dl>
+          <section class="st-note" aria-labelledby="st-note-title">
+            <h3 class="eyebrow" id="st-note-title">Ramp trial</h3>
+            <p class="help" id="st-note"></p>
+            <p class="help st-disclaimer">An illustrative teaching model of a fictional fan-and-jet rig. Masses are examples; suspension, aerodynamics and tank depletion are not modelled.</p>
+          </section>
+        </div>
+      </aside>
+
+      <section class="stunt-timeline stunt-only" aria-label="Replay controls">
+        <div class="st-transport">
+          <button type="button" class="st-play" id="st-play" aria-label="Play" title="Play / pause (Space)"><svg aria-hidden="true"><use href="#i-play" /></svg></button>
+          <button type="button" class="icon-btn icon-btn--bare" id="st-restart" aria-label="Restart from the beginning" title="Restart"><svg aria-hidden="true"><use href="#i-reset" /></svg></button>
+          <p class="st-time"><span id="st-now">00:00.00</span><span class="st-div">/</span><span id="st-duration">00:00.00</span></p>
+          <label class="st-rate"><span class="sr-only">Playback speed</span>
+            <select id="st-rate" aria-label="Playback speed"><option value="0.25">¼×</option><option value="0.5">½×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+          </label>
+          <div class="st-trials" role="group" aria-label="Trials">
+            <button type="button" class="btn btn--ghost btn--sm" id="st-ramp">Ramp</button>
+            <button type="button" class="btn btn--ghost btn--sm" id="st-flight">Flight</button>
+          </div>
+        </div>
+        <div class="st-track">
+          <div class="st-ticks" id="st-ticks" aria-hidden="true"></div>
+          <div class="st-bar" aria-hidden="true"><span id="st-progress"></span></div>
+          <input type="range" id="st-time" min="0" max="40" step="0.01" value="0" aria-label="Replay time in seconds" />
+        </div>
+        <nav class="st-chapters" id="st-chapters" aria-label="Jump to a moment"></nav>
+      </section>
       <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
       <footer class="credit">
@@ -351,6 +444,12 @@
               <li>Camera, Reset and Pause are in the top bar.</li>
               <li>Showroom: drag to orbit, pinch to zoom.</li>
             </ul>
+            <h3 class="eyebrow">Stunt lab</h3>
+            <ul class="plain">
+              <li><kbd>Space</kbd> play / pause · <kbd>←</kbd> <kbd>→</kbd> step half a second · <kbd>Home</kbd> start</li>
+              <li><kbd>C</kbd> camera (Follow → Wide → Orbit) · <kbd>R</kbd> restart · <kbd>P</kbd> play / pause</li>
+              <li>Drag the view to orbit; scroll or pinch to zoom. Choose a vehicle to see which stunts the same rig can still do.</li>
+            </ul>
             <h3 class="eyebrow">Laps</h3>
             <p class="help">The circuit has 7 checkpoints plus the start/finish line. A lap only counts when every checkpoint is crossed in order. Resetting the car voids the current lap. Times use simulation time, so pausing does not affect them.</p>
             <h3 class="eyebrow">Handling</h3>
@@ -372,6 +471,8 @@
           <section>
             <h3 class="eyebrow">The application</h3>
             <p class="help">Grid Roadster is an original browser driving application inspired by interactive vehicle showcases. The car, circuit, interface, textures and sounds are generated in code for this project; no third-party vehicle model, branding or audio is used.</p>
+            <h3 class="eyebrow">Stunt lab</h3>
+            <p class="help">A scrubbable replay of a half-pipe climb and a jet-powered flight for 13 different bodies carrying the same fictional fan-and-air-jet rig. Every run is calculated with a fixed-step simulation, so the force diagram shows the forces that produce the motion you see. The rig, numbers and masses are illustrative teaching values, not data about any real vehicle.</p>
             <h3 class="eyebrow">Accessibility</h3>
             <p class="help">Menus, settings and dialogs work with a keyboard and screen readers, with visible focus and reduced-motion support. Driving itself is a visual experience and is not accessible without sight.</p>
           </section>

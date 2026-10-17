@@ -11,7 +11,7 @@ therefore wait for conditions rather than fixed times. These figures are not
 performance measurements, and no performance numbers are claimed. Testing on
 real phones, tablets and GPU-equipped desktops has **not** been done yet.
 
-## Unit tests — 17 / 17 passed (`npm test`)
+## Unit tests — 26 / 26 passed (`npm test`)
 
 Physics, track and lap logic run in Node without a browser:
 
@@ -34,8 +34,15 @@ Physics, track and lap logic run in Node without a browser:
   rejected
 - crossing the line backwards cancels the lap
 - lap time formatting
+- Stunt lab: every vehicle carries the same 350 kg rig; wall / ceiling / lift-off
+  verdicts match μ·S, S and T against weight; the reference Roadster tracks the
+  ramp programme within 5 cm; **m·a equals the sum of gravity, suction, contact
+  and friction** along the climb; contact never pulls and friction never exceeds
+  μ·N for any of the 13 vehicles; the bus fails all three verdicts and hits the
+  parked cars; the Roadster lands on its wheels after exactly one roll; the
+  same roll couple is applied to every body; results are deterministic
 
-## Browser checks — 47 / 47 passed (`npm run test:e2e`)
+## Browser checks — 57 / 57 passed (`npm run test:e2e`)
 
 Full output: [`test-results.json`](test-results.json). Screenshots:
 [`screenshots/`](screenshots/).
@@ -54,6 +61,7 @@ Full output: [`test-results.json`](test-results.json). Screenshots:
 | Frame rate | Same pipeline at 30 / 60 / 144 fps: 150.96 / 150.96 / 150.81 km/h after 6 s |
 | Mobile (390 px, real CDP touch events) | Steering and gas held together with two touch points; lifting one finger releases only that control; `touchcancel` releases everything; gear, camera, reset and pause buttons work; touch targets ≥ 48 px and above the credit |
 | Layout | No horizontal overflow and Start button reachable at every size |
+| Stunt lab | Mode opens with timeline, panel and controls; play advances, Space pauses; scrubbing to 8.5 s shows "Upside down", 39.2 kN suction, 16 m height; chapter buttons jump; school bus shows 11,350 kg and Slips / Falls / Stays down; Flight trial plays and the Roadster lands upright; Follow / Wide / Orbit, Cutaway, Path, Arrows and C work; render loop idles when paused; credit visible; no errors; at 390 px all controls fit and details expand on tap |
 | Fallback | `?nowebgl` shows the WebGL-unavailable screen with tips and the credit |
 
 ## Known limitations
@@ -79,4 +87,9 @@ Full output: [`test-results.json`](test-results.json). Screenshots:
 - **Accessibility.** Menus, settings and dialogs are keyboard- and
   screen-reader-operable with visible focus, but driving itself is visual and
   not usable without sight.
-- **Single circuit.** There is one track and one car body style.
+- **Single circuit.** There is one driving track and one drivable car.
+- **Stunt lab is a teaching model.** The rig, masses, thrust and suction values
+  are illustrative. Suspension, aerodynamics, tank depletion and structural
+  strength are not modelled, the vehicles are simple procedural shapes, and very
+  light bodies fly hundreds of metres high and spin fast, because the jet
+  programme is deliberately the same for every body.

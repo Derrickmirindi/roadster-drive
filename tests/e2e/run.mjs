@@ -58,7 +58,7 @@ async function holdKey(page, code, ms) {
 
 const browser = await launch();
 // Optional: run a subset, e.g. E2E_SECTIONS=layouts,webgl
-const SECTIONS = (process.env.E2E_SECTIONS || 'desktop,layouts,webgl').split(',');
+const SECTIONS = (process.env.E2E_SECTIONS || 'desktop,stunt,layouts,webgl').split(',');
 
 // ---------------------------------------------------------------- desktop
 if (SECTIONS.includes('desktop')) {
@@ -441,6 +441,137 @@ if (SECTIONS.includes('desktop')) {
   await context.close();
 }
 
+
+// ---------------------------------------------------------------- stunt lab
+if (SECTIONS.includes('stunt')) {
+  const { context, page } = await openApp(browser);
+  const st = () => R(page, () => window.roadster.stunt);
+  const scrub = (t) =>
+    page.evaluate((v) => {
+      const r = document.getElementById('st-time');
+      r.value = String(v);
+      r.dispatchEvent(new Event('input', { bubbles: true }));
+    }, t);
+
+  await check('Stunt lab: mode opens with timeline, forces and controls', async () => {
+    await page.click('#mode-stunt');
+    const s = await st();
+    const visible = await Promise.all(['.stunt-controls', '#st-panel', '.stunt-timeline'].map((q) => page.locator(q).isVisible()));
+    assert((await R(page, () => window.roadster.mode)) === 'stunt' && visible.every(Boolean), JSON.stringify(visible));
+    assert(s.vehicle === 'roadster' && s.duration > 25, JSON.stringify(s));
+    const chapters = await page.locator('#st-chapters .chapter').allInnerTexts();
+    return `duration ${s.duration.toFixed(1)} s; chapters ${chapters.join(', ')}`;
+  });
+
+  await check('Stunt lab: play advances time; Space pauses', async () => {
+    await page.click('#st-play');
+    await until(page, () => window.roadster.stunt.time > 0.5);
+    await page.click('#scene', { position: { x: 600, y: 400 } });
+    await page.keyboard.press('Space');
+    const t1 = (await st()).time;
+    await page.waitForTimeout(800);
+    const t2 = (await st()).time;
+    assert(!(await st()).playing && Math.abs(t2 - t1) < 0.05, `t1 ${t1} t2 ${t2}`);
+    return `paused at ${t2.toFixed(2)} s`;
+  });
+
+  await check('Stunt lab: scrubbing updates the force diagram (inverted on the pipe)', async () => {
+    await scrub(8.5);
+    await page.waitForTimeout(400);
+    const state = await page.locator('#st-state').innerText();
+    const suction = Number((await page.locator('#st-f-suction').innerText()).replace(/[^\d.]/g, ''));
+    const h = await page.locator('#st-height').innerText();
+    assert(state === 'Upside down' && suction > 39 && parseFloat(h) > 15, `${state} ${suction} ${h}`);
+    await page.screenshot({ path: OUT + 'stunt-desktop-inverted.png' });
+    return `${state}, suction ${suction} kN, height ${h}`;
+  });
+
+  await check('Stunt lab: chapter buttons jump in time', async () => {
+    await page.click('#st-chapters .chapter:has-text("Launch")');
+    const s = await st();
+    assert(Math.abs(s.time - (s.flightStart + 2.5)) < 0.02, String(s.time));
+    return `Launch → ${s.time.toFixed(2)} s`;
+  });
+
+  await check('Stunt lab: swapping to the school bus changes mass and verdicts', async () => {
+    await page.selectOption('#st-vehicle', 'bus');
+    const s = await st();
+    const verdicts = await Promise.all(['#st-wall', '#st-ceiling', '#st-lift'].map((q) => page.locator(q).innerText()));
+    const mass = await page.locator('#st-mass').innerText();
+    assert(s.vehicle === 'bus' && verdicts.join() === 'Slips,Falls,Stays down' && !s.flight.lifted, verdicts.join());
+    return `${mass}; ${verdicts.join(' / ')}; flight: ${s.flight.outcome}`;
+  });
+
+  await check('Stunt lab: Flight trial plays from the run-in', async () => {
+    await page.selectOption('#st-vehicle', 'roadster');
+    await page.click('#st-flight');
+    await until(page, () => window.roadster.stunt.time > window.roadster.stunt.flightStart + 3.2, undefined, 90000);
+    await page.click('#st-play');
+    const s = await st();
+    assert(s.flight.landedUpright && s.time >= s.flightStart, JSON.stringify(s.flight));
+    return `airborne at ${s.time.toFixed(1)} s; outcome: ${s.flight.outcome}`;
+  });
+
+  await check('Stunt lab: cameras, cutaway, path and arrows toggles', async () => {
+    for (const c of ['wide', 'orbit', 'follow']) {
+      await page.click(`[data-st-camera=${c}]`);
+      assert((await st()).camera === c, c);
+    }
+    await page.click('#st-cutaway');
+    await page.click('#st-path');
+    await page.click('#st-arrows');
+    const s = await st();
+    assert(s.cutaway && s.path && !s.arrows, JSON.stringify(s));
+    await page.click('#st-arrows');
+    await scrub(s.flightStart + 3.0);
+    await page.waitForTimeout(500);
+    await page.screenshot({ path: OUT + 'stunt-desktop-cutaway-path.png' });
+    await page.keyboard.press('KeyC');
+    return `camera cycles; cutaway=${s.cutaway} path=${s.path}; C → ${(await st()).camera}`;
+  });
+
+  await check('Stunt lab: render loop stops when paused', async () => {
+    await page.evaluate(() => document.getElementById('st-play').getAttribute('aria-label') === 'Pause' && document.getElementById('st-play').click());
+    await page.waitForTimeout(1200);
+    assert(!(await R(page, () => window.roadster.loopRunning)), 'loop still running');
+    return 'idle while paused';
+  });
+
+  await check('Stunt lab: credit visible and no runtime errors', async () => {
+    const text = await page.locator('footer.credit').innerText();
+    assert(text.includes(CREDIT), text);
+    assert(page.errors.length === 0, page.errors.join(' | '));
+    return 'ok';
+  });
+  await context.close();
+
+  const mob = await openApp(browser, { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await check('Stunt lab 390px: controls fit, panel expands, timeline reachable', async () => {
+    const p = mob.page;
+    await p.click('#mode-stunt');
+    await p.waitForTimeout(500);
+    const info = await p.evaluate(() => {
+      const ids = ['st-play', 'st-ramp', 'st-flight', 'st-vehicle', 'st-panel-toggle'];
+      return {
+        overflow: document.documentElement.scrollWidth > innerWidth,
+        inView: ids.every((id) => {
+          const r = document.getElementById(id).getBoundingClientRect();
+          return r.width > 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight;
+        }),
+      };
+    });
+    assert(!info.overflow && info.inView, JSON.stringify(info));
+    await p.tap('#st-panel-toggle');
+    const open = await p.locator('#st-wall').isVisible();
+    assert(open, 'details did not expand');
+    await p.tap('#st-panel-toggle');
+    await p.screenshot({ path: OUT + 'stunt-mobile-390.png' });
+    assert(p.errors.length === 0, p.errors.join(' | '));
+    return 'all controls inside the viewport; details expand on tap';
+  });
+  await mob.context.close();
+}
+
 // ---------------------------------------------------------------- layouts
 for (const [w, h, name, touch] of !SECTIONS.includes('layouts') ? [] : [
   [390, 844, 'mobile-390', true],
@@ -553,6 +684,6 @@ if (SECTIONS.includes('webgl')) {
 await browser.close();
 const passed = results.filter((r) => r.ok).length;
 console.log(`\n${passed}/${results.length} checks passed`);
-const outName = SECTIONS.length === 3 ? 'test-results.json' : `test-results-${SECTIONS.join('-')}.json`;
+const outName = SECTIONS.length === 4 ? 'test-results.json' : `test-results-${SECTIONS.join('-')}.json`;
 writeFileSync(new URL('../../docs/' + outName, import.meta.url), JSON.stringify({ date: new Date().toISOString(), base: BASE, sections: SECTIONS, results }, null, 2));
 process.exit(passed === results.length ? 0 : 1);

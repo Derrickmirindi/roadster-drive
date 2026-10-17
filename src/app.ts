@@ -23,6 +23,7 @@ import { CameraRig, CameraMode, DRIVE_CAMERAS, CAMERA_LABELS } from './cameras.j
 import { InputManager, ActionName, DriveInput } from './input.js';
 import { EngineAudio } from './audio.js';
 import { Minimap } from './minimap.js';
+import { StuntLab } from './stunt-lab.js';
 import {
   DEFAULT_APPEARANCE,
   KMH_PER_MS,
@@ -38,7 +39,7 @@ import {
   unitLabel,
 } from './settings.js';
 
-type Mode = 'showroom' | 'drive';
+type Mode = 'showroom' | 'drive' | 'stunt';
 type PauseReason = 'user' | 'dialog' | 'hidden' | null;
 
 const BODY_SWATCHES: Array<[string, string]> = [
@@ -85,6 +86,7 @@ export class App {
   readonly audio = new EngineAudio();
   readonly settings: Settings;
   readonly minimap: Minimap;
+  readonly stunt = new StuntLab();
 
   mode: Mode = 'showroom';
   private pauseReason: PauseReason = null;
@@ -195,6 +197,7 @@ export class App {
   private get loopShouldContinue(): boolean {
     if (document.hidden) return false;
     if (this.mode === 'drive' && this.pauseReason === null) return true;
+    if (this.mode === 'stunt') return this.stunt.isAnimating || this.orbitPointers.size > 0;
     return this.rig.animating || this.orbitPointers.size > 0;
   }
 
@@ -202,6 +205,13 @@ export class App {
     this.rafId = 0;
     const dt = this.lastFrame < 0 ? 1 / 60 : Math.min(0.25, (now - this.lastFrame) / 1000);
     this.lastFrame = now;
+
+    if (this.mode === 'stunt') {
+      this.stunt.update(dt);
+      this.stunt.render(this.renderer);
+      if (this.loopShouldContinue) this.rafId = requestAnimationFrame(this.frame);
+      return;
+    }
 
     if (this.mode === 'drive' && this.pauseReason === null) {
       this.simulate(dt);
@@ -289,12 +299,55 @@ export class App {
 
   // ------------------------------------------------------------------ modes
 
+  private setModeUi(mode: Mode): void {
+    if (this.mode === 'stunt' && mode !== 'stunt') {
+      this.stunt.pause();
+      this.stunt.active = false;
+    }
+    this.mode = mode;
+    document.body.classList.remove('mode-showroom', 'mode-drive', 'mode-stunt');
+    document.body.classList.add(`mode-${mode}`);
+    for (const m of ['showroom', 'drive', 'stunt'] as const) $(`mode-${m}`).setAttribute('aria-pressed', String(m === mode));
+  }
+
+  enterStunt(): void {
+    if (this.mode === 'stunt') return;
+    this.closeDialogs();
+    if (this.mode === 'drive') {
+      this.state.vx = 0;
+      this.state.vz = 0;
+      this.state.cruiseOn = false;
+      this.laps.invalidate();
+    }
+    this.pauseReason = null;
+    this.setModeUi('stunt');
+    this.input.drivingEnabled = false;
+    this.input.releaseAll();
+    this.lastInput = { throttle: 0, brake: 0, steer: 0, handbrake: false };
+    this.audio.update(0, 0, 0, false);
+    this.setPanel(false);
+    this.updateTouchVisibility();
+    this.syncStuntAppearance();
+    this.stunt.active = true;
+    this.stunt.reducedMotion = () => this.reducedMotion;
+    requestAnimationFrame(() => {
+      this.stunt.updateViewOffset();
+      this.wake();
+    });
+    this.stunt.update(0);
+    this.stunt.updateUi(true);
+    this.resize();
+    this.wake();
+  }
+
+  private syncStuntAppearance(): void {
+    const a = this.settings.appearance;
+    this.stunt.syncAppearance(a.body, a.wheels, a.finish, this.settings.lighting.headlights);
+  }
+
   enterDrive(): void {
     if (this.mode === 'drive') return;
-    this.mode = 'drive';
-    document.body.classList.replace('mode-showroom', 'mode-drive');
-    $('mode-showroom').setAttribute('aria-pressed', 'false');
-    $('mode-drive').setAttribute('aria-pressed', 'true');
+    this.setModeUi('drive');
     this.input.drivingEnabled = true;
     this.pauseReason = null;
     this.stepper.reset();
@@ -317,11 +370,8 @@ export class App {
   enterShowroom(): void {
     if (this.mode === 'showroom') return;
     this.closeDialogs();
-    this.mode = 'showroom';
     this.pauseReason = null;
-    document.body.classList.replace('mode-drive', 'mode-showroom');
-    $('mode-showroom').setAttribute('aria-pressed', 'true');
-    $('mode-drive').setAttribute('aria-pressed', 'false');
+    this.setModeUi('showroom');
     this.input.drivingEnabled = false;
     this.input.releaseAll();
     // Park the car where it is.
@@ -555,6 +605,7 @@ export class App {
 
   private persist(): void {
     saveSettings(this.settings);
+    this.syncStuntAppearance();
   }
 
   private resize(): void {
@@ -563,6 +614,7 @@ export class App {
     this.renderer.setSize(w, h, false);
     this.rig.camera.aspect = w / h;
     this.rig.camera.updateProjectionMatrix();
+    this.stunt.resize(w, h);
     this.minimap.resize();
     this.updateTouchVisibility();
     this.wake();
@@ -636,7 +688,7 @@ export class App {
     // instead of applying the handbrake. Keyboard focus is unaffected.
     document.addEventListener('pointerup', (e) => {
       if (e.pointerType !== 'mouse') return;
-      const b = (e.target as HTMLElement | null)?.closest('#topbar-actions button, .modes button, #btn-start');
+      const b = (e.target as HTMLElement | null)?.closest('#topbar-actions button, .modes button, #btn-start, .stunt-controls button, .stunt-timeline button');
       if (b instanceof HTMLElement && !b.closest('dialog')) window.setTimeout(() => b.blur(), 0);
     });
   }
@@ -644,13 +696,18 @@ export class App {
   private onAction(a: ActionName): void {
     switch (a) {
       case 'camera':
-        this.cycleCamera();
+        if (this.mode === 'stunt') {
+          const c = this.stunt.cycleCamera();
+          this.toast(`${c[0].toUpperCase()}${c.slice(1)} camera`);
+        } else this.cycleCamera();
         break;
       case 'reset':
         if (this.mode === 'drive') this.resetCar();
+        else if (this.mode === 'stunt') this.stunt.restart();
         break;
       case 'pause':
         if (this.mode === 'drive') this.togglePause();
+        else if (this.mode === 'stunt' && $('panel').hidden) this.stunt.togglePlay();
         else if (!$('panel').hidden) this.setPanel(false);
         break;
       case 'gear':
@@ -692,7 +749,7 @@ export class App {
   private bindCanvas(): void {
     const c = this.canvas;
     c.addEventListener('pointerdown', (e) => {
-      if (this.mode !== 'showroom') {
+      if (this.mode === 'drive') {
         c.focus({ preventScroll: true });
         return;
       }
@@ -708,15 +765,19 @@ export class App {
     });
     c.addEventListener('pointermove', (e) => {
       const p = this.orbitPointers.get(e.pointerId);
-      if (!p || this.mode !== 'showroom') return;
+      if (!p || this.mode === 'drive') return;
       if (this.orbitPointers.size === 1) {
-        this.rig.orbitBy(-(e.clientX - p.x) * 0.006, (e.clientY - p.y) * 0.005);
+        if (this.mode === 'stunt') this.stunt.orbitBy(-(e.clientX - p.x) * 0.006, (e.clientY - p.y) * 0.005);
+        else this.rig.orbitBy(-(e.clientX - p.x) * 0.006, (e.clientY - p.y) * 0.005);
       }
       p.x = e.clientX;
       p.y = e.clientY;
       if (this.orbitPointers.size === 2) {
         const d = this.currentPinch();
-        if (this.pinchDist > 0 && d > 0) this.rig.zoomBy(this.pinchDist / d);
+        if (this.pinchDist > 0 && d > 0) {
+          if (this.mode === 'stunt') this.stunt.zoomBy(this.pinchDist / d);
+          else this.rig.zoomBy(this.pinchDist / d);
+        }
         this.pinchDist = d;
       }
       this.wake();
@@ -732,9 +793,10 @@ export class App {
     c.addEventListener(
       'wheel',
       (e) => {
-        if (this.mode !== 'showroom') return;
+        if (this.mode === 'drive') return;
         e.preventDefault();
-        this.rig.zoomBy(Math.exp(e.deltaY * 0.0012));
+        if (this.mode === 'stunt') this.stunt.zoomBy(Math.exp(e.deltaY * 0.0012));
+        else this.rig.zoomBy(Math.exp(e.deltaY * 0.0012));
         this.wake();
       },
       { passive: false },
@@ -897,6 +959,9 @@ export class App {
     // Modes
     $('mode-showroom').addEventListener('click', () => this.enterShowroom());
     $('mode-drive').addEventListener('click', () => this.enterDrive());
+    $('mode-stunt').addEventListener('click', () => this.enterStunt());
+    this.stunt.onChange = () => this.wake();
+    this.stunt.bindUi();
     $('btn-start').addEventListener('click', () => this.enterDrive());
 
     // Top bar
@@ -1167,6 +1232,25 @@ export class App {
       },
       get loopRunning() {
         return app.rafId !== 0;
+      },
+      get stunt() {
+        const st = app.stunt;
+        const r = st.stunt;
+        return {
+          vehicle: r.vehicle.id,
+          time: st.time,
+          duration: r.duration,
+          playing: st.playing,
+          camera: st.cameraMode,
+          cutaway: st.cutaway,
+          path: st.showPath,
+          arrows: st.showArrows,
+          mass: r.mass,
+          verdicts: { wall: r.verdicts.wallHold, ceiling: r.verdicts.ceilingHold, lift: r.verdicts.liftOff },
+          ramp: r.ramp,
+          flight: r.flight,
+          flightStart: r.flightStart,
+        };
       },
       get settings() {
         return structuredClone(app.settings);

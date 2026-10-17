@@ -26,3 +26,24 @@ day/night.
 
 Grid Roadster borrows only the general idea of camera modes and clean
 instrumentation. Its code, car, circuit, interface and branding are original.
+
+## Second inspection (17 October 2026)
+
+The site had been redeployed (new asset hashes) and now also offers a 13-vehicle
+selector, Ramp and Flight trial buttons, a mass / force-limit panel and live
+height, vertical-speed and roll readouts. REA captured the HTML and CSS; the two
+JavaScript bundles exceeded REA's 64 KiB capture limit, and only the first
+~66 KB of the main bundle could be read through a web fetch. That portion
+showed procedural geometry (no model files), a closed-form time-sampled
+trajectory, g = 9.81 and a 2,000 kg reference mass. No analytics or tracking
+requests were observed.
+
+## Stunt lab in this project
+
+Grid Roadster's Stunt lab offers the same *kinds* of tools — replay timeline,
+chapters, playback speed, vehicle swap, free-body diagram, force arrows,
+cutaway, path, Follow / Wide / Orbit cameras, Ramp and Flight trials — but is
+an independent implementation: its own course, its own forward-integrated
+physics (friction-limited half-pipe climb and jet flight), its own 13
+procedural vehicles, interface and wording. No code, assets or text from the
+reference were copied, and it makes no claims about any real vehicle or event.

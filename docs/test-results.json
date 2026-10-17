@@ -1,7 +1,12 @@
 {
-  "date": "2026-10-17T04:41:19.345Z",
+  "date": "2026-10-17T15:10:08.553Z",
   "base": "http://localhost:4173/",
-  "environment": "Headless Chromium bundled with Playwright 1.56 with SwiftShader software WebGL, Linux container",
+  "sections": [
+    "desktop",
+    "stunt",
+    "layouts",
+    "webgl"
+  ],
   "results": [
     {
       "name": "Loads without errors; loader hides",
@@ -13,187 +18,187 @@
       "name": "Exact creator credit visible in footer",
       "ok": true,
       "detail": "\"Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde\" at y=876",
-      "ms": 39
+      "ms": 75
     },
     {
       "name": "Render loop idles in showroom when nothing changes",
       "ok": true,
       "detail": "no continuous rAF while idle",
-      "ms": 1205
+      "ms": 1204
     },
     {
       "name": "Showroom orbit: drag rotates, wheel zooms",
       "ok": true,
       "detail": "orbit camera responds (visual check in screenshot)",
-      "ms": 588
+      "ms": 7670
     },
     {
       "name": "About / Credits panel shows exact credit",
       "ok": true,
       "detail": "dialog closes with Escape",
-      "ms": 19727
+      "ms": 26479
     },
     {
       "name": "Paint: swatch updates body material only",
       "ok": true,
       "detail": "body #1f3f8f; glass and wheels unchanged",
-      "ms": 281
+      "ms": 275
     },
     {
       "name": "Custom colour picker updates immediately",
       "ok": true,
       "detail": "#22aa66",
-      "ms": 22
+      "ms": 21
     },
     {
       "name": "Finish options change the paint material",
       "ok": true,
       "detail": "matte rough=0.82, metallic metal=0.72",
-      "ms": 220
+      "ms": 327
     },
     {
       "name": "Separate wheel colour",
       "ok": true,
       "detail": "#8a6a3a",
-      "ms": 32
+      "ms": 45
     },
     {
       "name": "Headlights toggle",
       "ok": true,
-      "detail": "off 0,0 \u2192 on 25,25",
-      "ms": 599
+      "detail": "off 0,0 → on 25,25",
+      "ms": 1210
     },
     {
       "name": "Reset appearance restores crimson gloss",
       "ok": true,
       "detail": "#a3141c",
-      "ms": 53
+      "ms": 46
     },
     {
       "name": "Night mode renders with headlights",
       "ok": true,
       "detail": "screenshot desktop-night-showroom.png",
-      "ms": 3342
+      "ms": 4311
     },
     {
       "name": "Start driving switches to Drive mode",
       "ok": true,
       "detail": "mode=drive, camera=chase",
-      "ms": 626
+      "ms": 1534
     },
     {
       "name": "Throttle accelerates (speed derived from velocity)",
       "ok": true,
       "detail": "38.6 km/h, HUD shows 39",
-      "ms": 16171
+      "ms": 18340
     },
     {
       "name": "Steering changes heading",
       "ok": true,
       "detail": "A: +0.147 rad, D: -0.141 rad",
-      "ms": 3046
+      "ms": 3654
     },
     {
       "name": "Brake stops the car without reversing",
       "ok": true,
       "detail": "stopped (v=0.000), stays in D, holding brake does not reverse",
-      "ms": 9929
+      "ms": 11931
     },
     {
       "name": "Gear change refused while moving",
       "ok": true,
       "detail": "stays in D at 54 km/h",
-      "ms": 5
+      "ms": 12
     },
     {
       "name": "Reverse via explicit gear selection",
       "ok": true,
       "detail": "reversing at -7.4 km/h, back to D after stopping",
-      "ms": 1628
+      "ms": 1945
     },
     {
       "name": "Handbrake makes the car slide",
       "ok": true,
       "detail": "heading after handbrake turn 1.56 rad (slip verified in unit tests)",
-      "ms": 710
+      "ms": 714
     },
     {
       "name": "Speed limit slider changes the limit, not the speed",
       "ok": true,
-      "detail": "108 \u2192 108 immediately, 102 km/h later; slider shows \"50 km/h\"",
-      "ms": 5793
+      "detail": "108 → 108 immediately, 102 km/h later; slider shows \"50 km/h\"",
+      "ms": 9473
     },
     {
       "name": "Units switch to mph",
       "ok": true,
-      "detail": "km/h \u2194 mph",
-      "ms": 5955
+      "detail": "km/h ↔ mph",
+      "ms": 8228
     },
     {
       "name": "Cruise control engages, holds, disengages on brake",
       "ok": true,
       "detail": "target 72 km/h, held at 72, off after brake",
-      "ms": 5077
+      "ms": 7149
     },
     {
-      "name": "Camera cycles chase \u2192 hood \u2192 overhead \u2192 chase",
+      "name": "Camera cycles chase → hood → overhead → chase",
       "ok": true,
-      "detail": "hood \u2192 overhead \u2192 chase",
-      "ms": 31835
+      "detail": "hood → overhead → chase",
+      "ms": 48748
     },
     {
       "name": "Barrier keeps the car inside the circuit",
       "ok": true,
       "detail": "hit the wall; max distance from centre 16.05 m (wall face at 17 m, car half-width 0.95 m)",
-      "ms": 707
+      "ms": 412
     },
     {
       "name": "Reset returns the car to the road",
       "ok": true,
       "detail": "lateral 0.00 m, speed 0",
-      "ms": 5
+      "ms": 14
     },
     {
       "name": "Lap timer starts at the line; shortcut lap is voided",
       "ok": true,
       "detail": "running=true, laps counted=0",
-      "ms": 5431
+      "ms": 7034
     },
     {
       "name": "Pause freezes simulation and stops the render loop",
       "ok": true,
       "detail": "frozen, loop stopped, Escape resumes",
-      "ms": 12263
+      "ms": 15605
     },
     {
       "name": "Window blur releases held keys (no stuck throttle)",
       "ok": true,
       "detail": "throttle released (0); paused=false",
-      "ms": 529
+      "ms": 521
     },
     {
       "name": "Keys ignored while typing in a colour field",
       "ok": true,
       "detail": "throttle=0, camera unchanged (chase)",
-      "ms": 5140
+      "ms": 7928
     },
     {
       "name": "Frame-rate independence (30 / 60 / 144 fps)",
       "ok": true,
       "detail": "30 fps: 150.96 km/h, 60 fps: 150.96 km/h, 144 fps: 150.81 km/h",
-      "ms": 14
+      "ms": 36
     },
     {
       "name": "Back to showroom",
       "ok": true,
       "detail": "car parked, orbit camera",
-      "ms": 2222
+      "ms": 2259
     },
     {
       "name": "Controls guide opens and is keyboard reachable",
       "ok": true,
       "detail": "? opens guide",
-      "ms": 10764
+      "ms": 15169
     },
     {
       "name": "No runtime errors during desktop session",
@@ -202,28 +207,88 @@
       "ms": 0
     },
     {
+      "name": "Stunt lab: mode opens with timeline, forces and controls",
+      "ok": true,
+      "detail": "duration 29.3 s; chapters APPROACH, CLIMB, INVERT, RETURN, RUN-IN, LAUNCH, ROLL, LAND",
+      "ms": 793
+    },
+    {
+      "name": "Stunt lab: play advances time; Space pauses",
+      "ok": true,
+      "detail": "paused at 1.08 s",
+      "ms": 16870
+    },
+    {
+      "name": "Stunt lab: scrubbing updates the force diagram (inverted on the pipe)",
+      "ok": true,
+      "detail": "Upside down, suction 39.2 kN, height 16.0 m",
+      "ms": 4630
+    },
+    {
+      "name": "Stunt lab: chapter buttons jump in time",
+      "ok": true,
+      "detail": "Launch → 22.00 s",
+      "ms": 30
+    },
+    {
+      "name": "Stunt lab: swapping to the school bus changes mass and verdicts",
+      "ok": true,
+      "detail": "11,350 kg total; Slips / Falls / Stays down; flight: Cannot lift off and runs into the parked cars.",
+      "ms": 174
+    },
+    {
+      "name": "Stunt lab: Flight trial plays from the run-in",
+      "ok": true,
+      "detail": "airborne at 23.2 s; outcome: Clears the parked cars at up to 8.2 m and lands on its wheels after 1 roll.",
+      "ms": 6745
+    },
+    {
+      "name": "Stunt lab: cameras, cutaway, path and arrows toggles",
+      "ok": true,
+      "detail": "camera cycles; cutaway=true path=true; C → wide",
+      "ms": 8833
+    },
+    {
+      "name": "Stunt lab: render loop stops when paused",
+      "ok": true,
+      "detail": "idle while paused",
+      "ms": 1210
+    },
+    {
+      "name": "Stunt lab: credit visible and no runtime errors",
+      "ok": true,
+      "detail": "ok",
+      "ms": 6
+    },
+    {
+      "name": "Stunt lab 390px: controls fit, panel expands, timeline reachable",
+      "ok": true,
+      "detail": "all controls inside the viewport; details expand on tap",
+      "ms": 13959
+    },
+    {
       "name": "Layout 390px: credit readable and no horizontal overflow",
       "ok": true,
       "detail": "font 11px",
-      "ms": 10
+      "ms": 6
     },
     {
       "name": "Touch controls visible at 390px",
       "ok": true,
-      "detail": "76\u00d776, 76\u00d776, 76\u00d7116, 72\u00d776, 52\u00d748, 52\u00d748",
-      "ms": 278
+      "detail": "76×76, 76×76, 76×116, 72×76, 52×48, 52×48",
+      "ms": 85
     },
     {
       "name": "Mobile multi-touch: steer + throttle together, release on cancel/end",
       "ok": true,
       "detail": "steer+gas held together (speed 7.4 km/h); independent release; cancel clears",
-      "ms": 8918
+      "ms": 12927
     },
     {
       "name": "Mobile reverse, camera, pause, reset buttons",
       "ok": true,
       "detail": "gear R, camera hood, paused true",
-      "ms": 11317
+      "ms": 16743
     },
     {
       "name": "No runtime errors at 390px",
@@ -235,13 +300,13 @@
       "name": "Layout 768px: credit readable and no horizontal overflow",
       "ok": true,
       "detail": "font 13px",
-      "ms": 4
+      "ms": 3
     },
     {
       "name": "Touch controls visible at 768px",
       "ok": true,
-      "detail": "84\u00d784, 84\u00d784, 84\u00d7128, 84\u00d784, 56\u00d748, 56\u00d748",
-      "ms": 60
+      "detail": "84×84, 84×84, 84×128, 84×84, 56×48, 56×48",
+      "ms": 122
     },
     {
       "name": "No runtime errors at 768px",
@@ -258,8 +323,8 @@
     {
       "name": "Touch controls visible at 844px",
       "ok": true,
-      "detail": "84\u00d784, 84\u00d784, 84\u00d7128, 84\u00d784, 56\u00d748, 56\u00d748",
-      "ms": 46
+      "detail": "84×84, 84×84, 84×128, 84×84, 56×48, 56×48",
+      "ms": 71
     },
     {
       "name": "No runtime errors at 844px",
@@ -271,7 +336,7 @@
       "name": "Layout 1440px: credit readable and no horizontal overflow",
       "ok": true,
       "detail": "font 13px",
-      "ms": 2
+      "ms": 3
     },
     {
       "name": "No runtime errors at 1440px",
@@ -283,7 +348,7 @@
       "name": "WebGL-unavailable screen with credit",
       "ok": true,
       "detail": "fallback screen shown",
-      "ms": 125
+      "ms": 207
     }
   ]
 }

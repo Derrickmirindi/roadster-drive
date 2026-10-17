@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-17T14:59:21.662Z",
+  "base": "http://localhost:4173/",
+  "sections": [
+    "stunt"
+  ],
+  "results": [
+    {
+      "name": "Stunt lab: mode opens with timeline, forces and controls",
+      "ok": true,
+      "detail": "duration 29.3 s; chapters APPROACH, CLIMB, INVERT, RETURN, RUN-IN, LAUNCH, ROLL, LAND",
+      "ms": 585
+    },
+    {
+      "name": "Stunt lab: play advances time; Space pauses",
+      "ok": true,
+      "detail": "paused at 1.07 s",
+      "ms": 16911
+    },
+    {
+      "name": "Stunt lab: scrubbing updates the force diagram (inverted on the pipe)",
+      "ok": true,
+      "detail": "Upside down, suction 39.2 kN, height 16.0 m",
+      "ms": 6389
+    },
+    {
+      "name": "Stunt lab: chapter buttons jump in time",
+      "ok": true,
+      "detail": "Launch → 22.00 s",
+      "ms": 78
+    },
+    {
+      "name": "Stunt lab: swapping to the school bus changes mass and verdicts",
+      "ok": true,
+      "detail": "11,350 kg total; Slips / Falls / Stays down; flight: Cannot lift off and runs into the parked cars.",
+      "ms": 201
+    },
+    {
+      "name": "Stunt lab: Flight trial plays from the run-in",
+      "ok": true,
+      "detail": "airborne at 23.3 s; outcome: Clears the parked cars at up to 8.2 m and lands on its wheels after 1 roll.",
+      "ms": 7345
+    },
+    {
+      "name": "Stunt lab: cameras, cutaway, path and arrows toggles",
+      "ok": true,
+      "detail": "camera cycles; cutaway=true path=true; C → wide",
+      "ms": 8493
+    },
+    {
+      "name": "Stunt lab: render loop stops when paused",
+      "ok": true,
+      "detail": "idle while paused",
+      "ms": 1207
+    },
+    {
+      "name": "Stunt lab: credit visible and no runtime errors",
+      "ok": true,
+      "detail": "ok",
+      "ms": 4
+    },
+    {
+      "name": "Stunt lab 390px: controls fit, panel expands, timeline reachable",
+      "ok": true,
+      "detail": "all controls inside the viewport; details expand on tap",
+      "ms": 14707
+    }
+  ]
+}

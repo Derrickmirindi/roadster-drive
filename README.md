@@ -2,10 +2,14 @@
 
 **Created by Derrick Mirindi, Frederic Mirindi and David Sinkhonde**
 
-An original browser driving application. Inspect an open-top roadster in the
-showroom, customise its paint, finish and wheels, then drive it around a 1.84 km
-test circuit with a speed limiter, cruise control, four cameras, a minimap and
-checkpoint-validated lap timing.
+An original browser driving application with three modes:
+
+- **Showroom** — inspect an open-top roadster and customise its paint, finish and wheels.
+- **Drive** — drive it around a 1.84 km test circuit with a speed limiter, cruise
+  control, four cameras, a minimap and checkpoint-validated lap timing.
+- **Stunt lab** — scrub through a half-pipe climb and a jet-powered flight for
+  13 different bodies carrying the same fictional fan-and-air-jet rig, with a
+  live free-body force diagram, cutaway, flight path and three cameras.
 
 **Play:** https://derrickmirindi.github.io/roadster-drive/
 
@@ -26,7 +30,8 @@ checkpoint-validated lap timing.
 
 | Area | Details |
 | --- | --- |
-| Modes | **Showroom** (orbit, zoom, appearance, lighting, keys preview) and **Drive** |
+| Modes | **Showroom** (orbit, zoom, appearance, lighting, keys preview), **Drive** and **Stunt lab** |
+| Stunt lab | Scrubbable replay (play/pause, ¼×–2×, chapters, Ramp / Flight trials), 13 vehicles, live free-body diagram and in-scene force arrows, wall-hold / ceiling-hold / lift-off verdicts, live height / vertical speed / roll, cutaway of the rig, flight path, Follow / Wide / Orbit cameras |
 | Driving | Throttle, brake, steering that calms down at speed, handbrake slides, explicit Drive/Reverse gear selection |
 | Speed | Live speed from the simulated velocity, km/h or mph, adjustable maximum-speed limit, cruise control |
 | Cameras | Orbit (showroom), chase, hood, overhead — blended transitions, no ground clipping |
@@ -55,6 +60,9 @@ checkpoint-validated lap timing.
 | `P` / `Esc` | Pause / resume |
 | `L` | Headlights · `U` units · `M` mute · `?` controls guide |
 
+Stunt lab: `Space` play/pause, `←` `→` step 0.5 s, `Home` start, `C` camera,
+`R` restart. Drag to orbit, scroll or pinch to zoom.
+
 Touch: ◀ ▶ steer (bottom left); **Gas**, **Brake**, **D/R** and **HB** (bottom
 right). Steering and throttle can be held together. Camera, Reset and Pause are
 in the top bar. Showroom: drag to orbit, pinch or scroll to zoom.
@@ -70,7 +78,7 @@ Requirements: Node.js 20 or newer.
 ```bash
 npm install          # TypeScript compiler + Three.js type definitions (dev only)
 npm run build        # compiles src/ to dist/js and copies static files to dist/
-npm test             # 17 unit tests for physics, track rules and laps
+npm test             # 26 unit tests: driving physics, track, laps and Stunt lab
 npm run preview      # serves dist/ at http://localhost:4173/
 ```
 
@@ -107,6 +115,25 @@ npm run test:e2e     # writes docs/test-results.json and docs/screenshots/
 - **Collisions:** barrier walls 17 m either side of the centre line push the car
   back and absorb most of the impact.
 
+## How the Stunt lab works
+
+An illustrative teaching model, not data about any real vehicle. Every body
+carries the same 350 kg rig: extractor fans giving at most 39.2 kN of suction
+(twice the 2,000 kg reference weight) and lift jets giving 53.3 kN.
+
+- **Ramp trial:** an 8 m-radius half-pipe from the ground to an inverted
+  ceiling. The tyres try to follow a reference speed programme; tyre force is
+  limited to μ·N (μ = 1), and the vehicle leaves the surface if the contact
+  force would have to pull (N < 0). Gravity, suction, contact and friction are
+  the forces that produce the motion (unit-tested force balance).
+- **Flight trial:** run-in at 14 m/s, a 0.6 s lift burn, then a 0.5 s roll
+  couple calibrated so the reference Roadster rolls exactly once. Lighter bodies
+  fly higher and over-rotate; heavier ones cannot lift off and hit the parked
+  cars. Nothing is retimed per vehicle.
+- Both trials are integrated at 240 Hz and stored as 60 Hz samples, so the
+  timeline can be scrubbed both ways. Static verdicts: wall hold μ·S ≥ m·g,
+  ceiling hold S ≥ m·g, lift-off T > m·g.
+
 ## Project layout
 
 ```
@@ -125,6 +152,9 @@ src/                  TypeScript source
   input.ts            keyboard + multi-touch with stuck-input protection
   audio.ts            Web Audio synthesis
   minimap.ts          canvas minimap
+  stunt-sim.ts        Stunt lab physics, vehicles, verdicts, timeline (no Three.js)
+  stunt-vehicles.ts   13 procedural vehicle bodies and the shared rig
+  stunt-lab.ts        Stunt lab scene, cameras, arrows, path, timeline and panel
   settings.ts         persisted settings and best lap
   app.ts, main.ts     application controller, boot, WebGL checks
 tests/                unit tests and end-to-end browser checks
