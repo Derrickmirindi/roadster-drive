@@ -20,7 +20,7 @@ An original browser driving application with three modes:
 - **Arcade-style handling.** The vehicle model is a lightweight arcade
   simulation written for this project. It is not a validated vehicle-dynamics
   model. See [How the simulation works](#how-the-simulation-works).
-- **Original assets.** The car ("GR-1"), circuit, textures, icons and sounds are
+- **Original assets.** The car ("GR-1", a sculpted long-bonnet two-seater generated from lofted cross-sections), circuit, textures, icons and sounds are
   generated in code. No third-party car model, branding or audio is used.
 - **Inspired by, not copied from,** the public interactive demo at
   `roadster.pplx.app`. That page is a scripted physics replay; this project is a
@@ -33,6 +33,7 @@ An original browser driving application with three modes:
 | Modes | **Showroom** (orbit, zoom, appearance, lighting, keys preview), **Drive** and **Stunt lab** |
 | Stunt lab | Scrubbable replay (play/pause, ¼×–2×, chapters, Ramp / Flight trials), 13 vehicles, live free-body diagram and in-scene force arrows, wall-hold / ceiling-hold / lift-off verdicts, live height / vertical speed / roll, cutaway of the rig, flight path, Follow / Wide / Orbit cameras |
 | Driving | Throttle, brake, steering that calms down at speed, handbrake slides, explicit Drive/Reverse gear selection |
+| Jet flight | `F` / **Flight** / **JET** fires the lift jets while driving: ~8 m jump with an optional barrel roll, lands on the road at the same speed; tanks refill in 5 s |
 | Speed | Live speed from the simulated velocity, km/h or mph, adjustable maximum-speed limit, cruise control |
 | Cameras | Orbit (showroom), chase, hood, overhead — blended transitions, no ground clipping |
 | Track | Closed loop with straights and corners, lane markings, kerbs, barriers, run-off, start gantry |
@@ -58,6 +59,7 @@ An original browser driving application with three modes:
 | `C` | Camera: chase → hood → overhead |
 | `R` | Reset car onto the track |
 | `P` / `Esc` | Pause / resume |
+| `F` | Jet flight (lift-off, optional barrel roll, landing) |
 | `L` | Headlights · `U` units · `M` mute · `?` controls guide |
 
 Stunt lab: `Space` play/pause, `←` `→` step 0.5 s, `Home` start, `C` camera,
@@ -78,7 +80,7 @@ Requirements: Node.js 20 or newer.
 ```bash
 npm install          # TypeScript compiler + Three.js type definitions (dev only)
 npm run build        # compiles src/ to dist/js and copies static files to dist/
-npm test             # 26 unit tests: driving physics, track, laps and Stunt lab
+npm test             # 30 unit tests: driving, track, laps, jet flight and Stunt lab
 npm run preview      # serves dist/ at http://localhost:4173/
 ```
 
@@ -152,6 +154,7 @@ src/                  TypeScript source
   input.ts            keyboard + multi-touch with stuck-input protection
   audio.ts            Web Audio synthesis
   minimap.ts          canvas minimap
+  flight.ts           jet flight while driving (no Three.js)
   stunt-sim.ts        Stunt lab physics, vehicles, verdicts, timeline (no Three.js)
   stunt-vehicles.ts   13 procedural vehicle bodies and the shared rig
   stunt-lab.ts        Stunt lab scene, cameras, arrows, path, timeline and panel

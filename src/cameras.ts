@@ -18,6 +18,8 @@ export interface CarPose {
   z: number;
   heading: number;
   speed: number;
+  /** Height above the road (m), e.g. during a jet flight. */
+  y?: number;
 }
 
 export interface CameraOptions {
@@ -96,6 +98,7 @@ export class CameraRig {
 
   update(dt: number, car: CarPose, opts: CameraOptions): void {
     const cam = this.camera;
+    const cy = car.y ?? 0;
     const sin = Math.sin(car.heading);
     const cos = Math.cos(car.heading);
     this.smoothHeading = this.chaseInit ? dampAngle(this.smoothHeading, car.heading, 5, dt) : car.heading;
@@ -112,25 +115,25 @@ export class CameraRig {
           0.6 + Math.sin(this.orbitPitch) * this.orbitDist,
           car.z + Math.cos(this.orbitYaw) * cp * this.orbitDist,
         );
-        this.look.set(car.x, 0.62, car.z);
+        this.look.set(car.x, 0.62 + cy, car.z);
         break;
       }
       case 'chase': {
         const sh = Math.sin(this.smoothHeading);
         const ch = Math.cos(this.smoothHeading);
         const dist = 6.4 + Math.min(car.speed, 60) * 0.02;
-        this.tmp.set(car.x - sh * dist, 2.35, car.z - ch * dist);
+        this.tmp.set(car.x - sh * dist, 2.35 + cy * 0.85, car.z - ch * dist);
         if (!this.chaseInit) this.chasePos.copy(this.tmp);
         else this.chasePos.set(damp(this.chasePos.x, this.tmp.x, 9, dt), damp(this.chasePos.y, this.tmp.y, 9, dt), damp(this.chasePos.z, this.tmp.z, 9, dt));
         h.position.copy(this.chasePos);
-        this.look.set(car.x + sin * 3.5, 0.95, car.z + cos * 3.5);
+        this.look.set(car.x + sin * 3.5, 0.95 + cy, car.z + cos * 3.5);
         if (opts.speedFov && !opts.reducedMotion) fov = BASE_FOV + Math.min(12, car.speed * 0.17);
         break;
       }
       case 'hood': {
         // Just above the windscreen header, looking down the bonnet.
-        h.position.set(car.x + sin * 0.55, 1.38, car.z + cos * 0.55);
-        this.look.set(car.x + sin * 20, 0.6, car.z + cos * 20);
+        h.position.set(car.x + sin * 0.55, 1.38 + cy, car.z + cos * 0.55);
+        this.look.set(car.x + sin * 20, 0.6 + cy * 0.6, car.z + cos * 20);
         fov = 62;
         break;
       }

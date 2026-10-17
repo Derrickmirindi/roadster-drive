@@ -24,6 +24,7 @@ import { InputManager, ActionName, DriveInput } from './input.js';
 import { EngineAudio } from './audio.js';
 import { Minimap } from './minimap.js';
 import { StuntLab } from './stunt-lab.js';
+import { FlightState, createFlightState, launch, stepFlight, canFly, isBurning, RECHARGE_TIME, FlightEvent } from './flight.js';
 import {
   DEFAULT_APPEARANCE,
   KMH_PER_MS,
@@ -87,6 +88,8 @@ export class App {
   readonly settings: Settings;
   readonly minimap: Minimap;
   readonly stunt = new StuntLab();
+  readonly flight: FlightState = createFlightState();
+  private readonly flames: THREE.Mesh[] = [];
 
   mode: Mode = 'showroom';
   private pauseReason: PauseReason = null;
@@ -138,6 +141,7 @@ export class App {
   // ------------------------------------------------------------------ setup
 
   init(): void {
+    this.buildFlames();
     this.applyAppearance();
     this.applyLighting();
     this.applyGraphics();
@@ -247,11 +251,25 @@ export class App {
     const steps = this.stepper.advance(frameDt);
     const h = this.stepper.step;
     for (let i = 0; i < steps; i++) {
-      const input = this.input.read();
+      const airborne = this.flight.airborne;
+      const input = airborne ? { throttle: 0, brake: 0, steer: 0, handbrake: false } : this.input.read();
       this.lastInput = input;
       const before = this.rules.apply(this.state); // surface at current position
-      const ev = stepCar(this.state, input, DEFAULT_PARAMS, { speedLimit: this.speedLimitMs, surface: before.surface }, h);
-      if (ev.cruiseDisengaged) this.toast('Cruise control off');
+      if (airborne) {
+        // No tyre grip in the air: keep the horizontal velocity (light air drag).
+        const s = this.state;
+        const drag = Math.exp(-0.02 * h);
+        s.vx *= drag;
+        s.vz *= drag;
+        s.x += s.vx * h;
+        s.z += s.vz * h;
+        s.wheelSpin += (forwardSpeed(s) / 0.34) * h;
+        s.steer = 0;
+      } else {
+        const ev = stepCar(this.state, input, DEFAULT_PARAMS, { speedLimit: this.speedLimitMs, surface: before.surface }, h);
+        if (ev.cruiseDisengaged) this.toast('Cruise control off');
+      }
+      for (const fe of stepFlight(this.flight, h)) this.onFlightEvent(fe);
       const res = this.rules.apply(this.state);
       this.diagMaxLateral = Math.max(this.diagMaxLateral, res.contact ? BARRIER_OFFSET - CAR_HALF_WIDTH : Math.abs(res.lateral));
       if (res.impact > 1.2) {
@@ -284,13 +302,19 @@ export class App {
   }
 
   private pose() {
-    return { x: this.state.x, z: this.state.z, heading: this.state.heading, speed: speedOf(this.state) };
+    return { x: this.state.x, z: this.state.z, heading: this.state.heading, speed: speedOf(this.state), y: this.flight.y };
   }
 
   private syncCarVisual(): void {
     const s = this.state;
-    this.car.root.position.set(s.x, 0, s.z);
+    this.car.root.position.set(s.x, this.flight.y, s.z);
     this.car.root.rotation.y = s.heading;
+    this.car.root.rotation.z = this.flight.roll;
+    const burn = isBurning(this.flight) && this.mode === 'drive';
+    for (const f of this.flames) {
+      f.visible = burn;
+      if (burn) f.scale.set(1, 0.85 + Math.random() * 0.3, 1);
+    }
     const f = forwardSpeed(s);
     const angle = (s.steer * DEFAULT_PARAMS.maxSteerAngle) / (1 + Math.abs(f) / DEFAULT_PARAMS.steerFalloffSpeed);
     this.car.updateWheels(1, s.wheelSpin, angle);
@@ -300,6 +324,7 @@ export class App {
   // ------------------------------------------------------------------ modes
 
   private setModeUi(mode: Mode): void {
+    if (mode !== 'drive') this.cancelFlight();
     if (this.mode === 'stunt' && mode !== 'stunt') {
       this.stunt.pause();
       this.stunt.active = false;
@@ -431,6 +456,7 @@ export class App {
   }
 
   resetCar(message = 'Car reset to the track'): void {
+    this.cancelFlight();
     this.rules.resetCar(this.state);
     const ev = this.laps.invalidate();
     this.stepper.reset();
@@ -438,6 +464,83 @@ export class App {
     this.syncCarVisual();
     this.updateHud(true);
     this.wake();
+  }
+
+  // ------------------------------------------------------------------ jet flight
+
+  private buildFlames(): void {
+    const mat = new THREE.MeshBasicMaterial({ color: 0xbfe6f5, transparent: true, opacity: 0.8, depthWrite: false });
+    const geo = new THREE.ConeGeometry(0.18, 1.8, 12, 1, true);
+    geo.rotateX(Math.PI); // point down
+    geo.translate(0, -0.9, 0);
+    for (const [x, z] of [
+      [-0.62, 1.4],
+      [0.62, 1.4],
+      [-0.62, -1.4],
+      [0.62, -1.4],
+    ]) {
+      const m = new THREE.Mesh(geo, mat);
+      m.position.set(x, 0.22, z);
+      m.visible = false;
+      m.renderOrder = 3;
+      this.car.root.add(m);
+      this.flames.push(m);
+    }
+  }
+
+  /** Fire the lift jets while driving. */
+  launchFlight(): void {
+    if (this.mode !== 'drive') {
+      this.toast('Jet flight works in Drive mode — or try the Flight trial in the Stunt lab');
+      return;
+    }
+    if (this.pauseReason !== null) return;
+    if (this.flight.airborne) {
+      this.toast('Already in the air');
+      return;
+    }
+    if (!canFly(this.flight)) {
+      const left = Math.ceil((1 - this.flight.charge) * RECHARGE_TIME);
+      this.toast(`Air tanks refilling — ready in ${left} s`);
+      return;
+    }
+    this.flight.rollEnabled = this.settings.driving.flightRoll;
+    if (this.state.cruiseOn) this.state.cruiseOn = false;
+    launch(this.flight);
+    this.audio.impact(4);
+    this.rig.addShake(0.25);
+    this.updateHud(true);
+    this.wake();
+  }
+
+  private cancelFlight(): void {
+    const f = this.flight;
+    const wasFlying = f.t >= 0;
+    f.y = 0;
+    f.vy = 0;
+    f.roll = 0;
+    f.rollRate = 0;
+    f.airborne = false;
+    f.t = -1;
+    if (wasFlying) f.charge = 0;
+    for (const m of this.flames) m.visible = false;
+  }
+
+  private onFlightEvent(e: FlightEvent): void {
+    if (e.type === 'liftoff') {
+      this.toast(this.flight.rollEnabled ? 'Lift-off — barrel roll' : 'Lift-off');
+    } else if (e.type === 'landed') {
+      this.audio.impact(6);
+      this.rig.addShake(0.4);
+      const u = this.settings.driving.units;
+      const dist = speedOf(this.state) * e.airtime;
+      const distTxt = u === 'kmh' ? `${Math.round(dist)} m` : `${Math.round(dist * 3.281)} ft`;
+      if (e.upright) this.toast(`Landed — ${e.peak.toFixed(1)} m high, ${distTxt} in ${e.airtime.toFixed(1)} s`);
+      else this.resetCar('Rough landing — car recovered');
+    } else if (e.type === 'ready') {
+      this.toast('Jets ready (F)');
+    }
+    this.updateHud(true);
   }
 
   cycleCamera(): void {
@@ -524,6 +627,21 @@ export class App {
     $('t-gear').textContent = this.state.gear;
     $('hud-limit').textContent = String(Math.round(speedInUnits(this.speedLimitMs, u)));
     $('hud-cruise').textContent = this.state.cruiseOn ? String(Math.round(speedInUnits(this.state.cruiseTarget, u))) : 'Off';
+    const fl = this.flight;
+    const jets = fl.airborne
+      ? `${fl.y.toFixed(1)} m`
+      : fl.t >= 0
+        ? 'Firing'
+        : fl.charge < 1
+          ? `${Math.ceil((1 - fl.charge) * RECHARGE_TIME)} s`
+          : 'Ready';
+    $('hud-jets').textContent = jets;
+    const ready = canFly(fl);
+    for (const id of ['btn-flight', 't-jet', 'flight-launch']) {
+      const b = $(id);
+      b.setAttribute('aria-disabled', String(!ready));
+      b.classList.toggle('is-charging', !ready);
+    }
     const scale = SPEED_LIMIT_MAX_KMH / KMH_PER_MS;
     $('hud-speedbar').style.width = `${Math.min(100, (speed / scale) * 100)}%`;
     $('hud-limitmark').style.left = `${Math.min(100, (this.speedLimitMs / scale) * 100)}%`;
@@ -675,6 +793,7 @@ export class App {
     this.input.bindHold($('t-brake'), 'down');
     this.input.bindHold($('t-hand'), 'handbrake');
     $('t-gear').addEventListener('click', () => this.toggleGear());
+    $('t-jet').addEventListener('click', () => this.launchFlight());
 
     // Any first interaction may start audio (browsers require a user gesture).
     const unlock = () => {
@@ -739,6 +858,9 @@ export class App {
         this.syncSettingsForm();
         this.persist();
         this.toast(this.settings.audio.muted ? 'Sound muted' : 'Sound on');
+        break;
+      case 'flight':
+        this.launchFlight();
         break;
       case 'help':
         this.openDialog('dlg-help');
@@ -1073,6 +1195,15 @@ export class App {
     $('cruise-up').addEventListener('click', () => this.adjustCruise(1));
     $('cruise-down').addEventListener('click', () => this.adjustCruise(-1));
     $('gear-toggle').addEventListener('click', () => this.toggleGear());
+    $('btn-flight').addEventListener('click', () => this.launchFlight());
+    $('flight-launch').addEventListener('click', () => this.launchFlight());
+    const roll = $<HTMLInputElement>('flight-roll');
+    roll.checked = this.settings.driving.flightRoll;
+    roll.addEventListener('change', () => {
+      this.settings.driving.flightRoll = roll.checked;
+      this.persist();
+      this.toast(roll.checked ? 'Barrel roll on for the next flight' : 'Barrel roll off — straight jumps');
+    });
 
     // Pause dialog
     const pd = $<HTMLDialogElement>('dlg-pause');
@@ -1189,6 +1320,10 @@ export class App {
       },
       get forwardMs() {
         return forwardSpeed(app.state);
+      },
+      get flight() {
+        const f = app.flight;
+        return { y: f.y, vy: f.vy, roll: f.roll, airborne: f.airborne, t: f.t, charge: f.charge, peak: f.peak, rollEnabled: f.rollEnabled };
       },
       get cruise() {
         return { on: app.state.cruiseOn, target: app.state.cruiseTarget };

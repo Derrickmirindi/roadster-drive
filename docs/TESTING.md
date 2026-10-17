@@ -11,7 +11,7 @@ therefore wait for conditions rather than fixed times. These figures are not
 performance measurements, and no performance numbers are claimed. Testing on
 real phones, tablets and GPU-equipped desktops has **not** been done yet.
 
-## Unit tests — 26 / 26 passed (`npm test`)
+## Unit tests — 30 / 30 passed (`npm test`)
 
 Physics, track and lap logic run in Node without a browser:
 
@@ -34,6 +34,7 @@ Physics, track and lap logic run in Node without a browser:
   rejected
 - crossing the line backwards cancels the lap
 - lap time formatting
+- Jet flight: lift-off, 7.5–9 m peak and 2.5–3.3 s airtime, landing upright; the barrel roll is exactly one turn; no relaunch until the 5 s refill; no launch while airborne
 - Stunt lab: every vehicle carries the same 350 kg rig; wall / ceiling / lift-off
   verdicts match μ·S, S and T against weight; the reference Roadster tracks the
   ramp programme within 5 cm; **m·a equals the sum of gravity, suction, contact
@@ -42,7 +43,7 @@ Physics, track and lap logic run in Node without a browser:
   parked cars; the Roadster lands on its wheels after exactly one roll; the
   same roll couple is applied to every body; results are deterministic
 
-## Browser checks — 57 / 57 passed (`npm run test:e2e`)
+## Browser checks — 58 / 58 passed (`npm run test:e2e`)
 
 Full output: [`test-results.json`](test-results.json). Screenshots:
 [`screenshots/`](screenshots/).
@@ -61,6 +62,7 @@ Full output: [`test-results.json`](test-results.json). Screenshots:
 | Frame rate | Same pipeline at 30 / 60 / 144 fps: 150.96 / 150.96 / 150.81 km/h after 6 s |
 | Mobile (390 px, real CDP touch events) | Steering and gas held together with two touch points; lifting one finger releases only that control; `touchcancel` releases everything; gear, camera, reset and pause buttons work; touch targets ≥ 48 px and above the credit |
 | Layout | No horizontal overflow and Start button reachable at every size |
+| Jet flight | In Drive at 90 km/h, F lifts the car to 8.2 m, it rolls once and lands upright on the road still above 60 km/h; a second F is refused while the tanks refill |
 | Stunt lab | Mode opens with timeline, panel and controls; play advances, Space pauses; scrubbing to 8.5 s shows "Upside down", 39.2 kN suction, 16 m height; chapter buttons jump; school bus shows 11,350 kg and Slips / Falls / Stays down; Flight trial plays and the Roadster lands upright; Follow / Wide / Orbit, Cutaway, Path, Arrows and C work; render loop idles when paused; credit visible; no errors; at 390 px all controls fit and details expand on tap |
 | Fallback | `?nowebgl` shows the WebGL-unavailable screen with tips and the credit |
 

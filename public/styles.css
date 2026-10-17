@@ -479,7 +479,7 @@ body:not(.mode-stunt) .stunt-only {
   padding: calc(var(--u) * 1.5) calc(var(--u) * 2) calc(var(--u) * 2);
 }
 .speedo {
-  width: 264px;
+  width: 330px;
 }
 .speedo__value {
   font-size: var(--t-3xl);
@@ -503,7 +503,7 @@ body:not(.mode-stunt) .stunt-only {
 }
 .speedo__row {
   display: flex;
-  gap: calc(var(--u) * 2);
+  gap: calc(var(--u) * 1.5);
   align-items: center;
   margin-top: var(--u);
   font-size: var(--t-sm);
@@ -514,6 +514,7 @@ body:not(.mode-stunt) .stunt-only {
   gap: 6px;
   align-items: baseline;
   font-weight: 600;
+  white-space: nowrap;
 }
 .gear {
   display: flex;
@@ -1182,6 +1183,21 @@ select {
   transition: opacity 300ms var(--ease);
 }
 
+/* ---------- Jet flight ---------- */
+
+.btn-flight {
+  box-shadow: inset 0 -2px 0 var(--red);
+}
+.btn-flight.is-charging,
+.tbtn--jet.is-charging,
+#flight-launch.is-charging {
+  opacity: 0.5;
+}
+.tbtn--jet {
+  background: rgba(111, 183, 214, 0.25);
+  border-color: #6fb7d6;
+}
+
 /* ---------- Stunt lab ---------- */
 
 :root {
@@ -1723,7 +1739,7 @@ select {
   .speedo__value {
     font-size: var(--t-2xl);
   }
-  .speedo__row .meta:last-child {
+  .speedo__row .meta:nth-child(3) {
     display: none;
   }
   .laps {

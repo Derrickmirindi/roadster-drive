@@ -22,6 +22,7 @@ export type ActionName =
   | 'cruiseUp'
   | 'cruiseDown'
   | 'headlights'
+  | 'flight'
   | 'units'
   | 'mute'
   | 'help';
@@ -52,6 +53,7 @@ const KEY_ACTION: Record<string, ActionName> = {
   BracketLeft: 'cruiseDown',
   Minus: 'cruiseDown',
   KeyL: 'headlights',
+  KeyF: 'flight',
   KeyU: 'units',
   KeyM: 'mute',
   Slash: 'help',

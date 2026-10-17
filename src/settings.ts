@@ -20,6 +20,8 @@ export interface Settings {
   driving: {
     units: Units;
     speedLimitKmh: number;
+    /** Barrel roll during jet flights. */
+    flightRoll: boolean;
   };
   /** Rendering and comfort effects. */
   graphics: {
@@ -45,7 +47,7 @@ export const DEFAULT_APPEARANCE: Settings['appearance'] = {
 export const DEFAULT_SETTINGS: Settings = {
   appearance: { ...DEFAULT_APPEARANCE },
   lighting: { night: false, headlights: true },
-  driving: { units: 'kmh', speedLimitKmh: 180 },
+  driving: { units: 'kmh', speedLimitKmh: 180, flightRoll: true },
   graphics: { quality: 'auto', shake: true, speedFov: true, reducedMotion: 'system', touchControls: 'auto' },
   audio: { enabled: true, volume: 0.5, muted: false },
 };
@@ -94,6 +96,7 @@ export function loadSettings(): Settings {
       if (p.driving.units === 'mph' || p.driving.units === 'kmh') s.driving.units = p.driving.units;
       const lim = Number(p.driving.speedLimitKmh);
       if (Number.isFinite(lim)) s.driving.speedLimitKmh = Math.min(SPEED_LIMIT_MAX_KMH, Math.max(SPEED_LIMIT_MIN_KMH, lim));
+      if (typeof p.driving.flightRoll === 'boolean') s.driving.flightRoll = p.driving.flightRoll;
     }
     if (p.graphics) {
       const g = p.graphics;

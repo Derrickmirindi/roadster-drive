@@ -33,6 +33,7 @@
       <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" /></symbol>
       <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M17 9a4 4 0 0 1 0 6" /></symbol>
       <symbol id="i-mute" viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4z" /><path d="M17 9l4 6M21 9l-4 6" /></symbol>
+      <symbol id="i-jet" viewBox="0 0 24 24"><path d="M12 3l3 7h-6z" /><path d="M7 14h10l-2 3H9z" /><path d="M10 19l-1 2M14 19l1 2M12 19v3" /></symbol>
       <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" /></symbol>
     </svg>
 
@@ -56,6 +57,9 @@
         <div class="actions" id="topbar-actions" role="toolbar" aria-label="Quick actions">
           <button type="button" class="icon-btn" id="btn-panel" aria-expanded="false" aria-controls="panel">
             <svg aria-hidden="true"><use href="#i-paint" /></svg><span class="label">Customise</span>
+          </button>
+          <button type="button" class="icon-btn drive-only btn-flight" id="btn-flight" title="Jet flight (F)">
+            <svg aria-hidden="true"><use href="#i-jet" /></svg><span class="label">Flight</span>
           </button>
           <button type="button" class="icon-btn drive-only" id="btn-camera" title="Change camera (C)">
             <svg aria-hidden="true"><use href="#i-camera" /></svg><span class="label" id="camera-label">Chase</span>
@@ -100,6 +104,7 @@
             <li><kbd>G</kbd> Gear D / R</li>
             <li><kbd>Space</kbd> Handbrake</li>
             <li><kbd>C</kbd> Camera</li>
+            <li><kbd>F</kbd> Jet flight</li>
           </ul>
         </div>
         <button type="button" class="btn btn--primary btn--wide" id="btn-start">Start driving</button>
@@ -114,6 +119,7 @@
             <p class="gear" aria-label="Gear"><span class="gear__d" id="gear-d" data-on="true">D</span><span class="gear__r" id="gear-r">R</span></p>
             <p class="meta"><span class="eyebrow">Limit</span> <span id="hud-limit">180</span></p>
             <p class="meta"><span class="eyebrow">Cruise</span> <span id="hud-cruise">Off</span></p>
+            <p class="meta"><span class="eyebrow">Jets</span> <span id="hud-jets">Ready</span></p>
           </div>
           <div class="limitbar" aria-hidden="true"><span id="hud-speedbar"></span><i id="hud-limitmark"></i></div>
         </div>
@@ -201,6 +207,14 @@
             <p class="help">Engages at your current speed (20 km/h or more, gear D) and holds it gently. Braking or the handbrake disengages it. <kbd>[</kbd> <kbd>]</kbd> adjust the target.</p>
           </fieldset>
           <fieldset class="group">
+            <legend class="eyebrow">Jet flight</legend>
+            <div class="row">
+              <button type="button" class="btn btn--primary" id="flight-launch">Launch flight (F)</button>
+            </div>
+            <label class="switch"><input type="checkbox" id="flight-roll" checked /><span>Barrel roll in the air</span></label>
+            <p class="help">Fires the lift jets for 0.6 s (53.3 kN against the car's 19.6 kN weight). The car keeps its speed and direction, flies about 8 m high and lands on the road; with the roll on, it turns once in the air. The air tanks take 5 s to refill after landing. Steering, throttle and brakes do nothing in the air.</p>
+          </fieldset>
+          <fieldset class="group">
             <legend class="eyebrow">Gear</legend>
             <div class="row">
               <button type="button" class="btn btn--ghost" id="gear-toggle">Select reverse (G)</button>
@@ -220,6 +234,7 @@
           <div class="touch__aux">
             <button type="button" class="tbtn tbtn--small" id="t-gear" aria-label="Toggle gear between drive and reverse">D</button>
             <button type="button" class="tbtn tbtn--small" id="t-hand" aria-label="Handbrake">HB</button>
+            <button type="button" class="tbtn tbtn--small tbtn--jet" id="t-jet" aria-label="Jet flight">JET</button>
           </div>
           <button type="button" class="tbtn tbtn--brake" id="t-brake" aria-label="Brake">Brake</button>
           <button type="button" class="tbtn tbtn--gas" id="t-gas" aria-label="Throttle">Gas</button>
@@ -423,6 +438,7 @@
                 <tr><th scope="row"><kbd>A</kbd> / <kbd>←</kbd>, <kbd>D</kbd> / <kbd>→</kbd></th><td>Steer left / right</td></tr>
                 <tr><th scope="row"><kbd>G</kbd></th><td>Toggle gear Drive / Reverse (below 2 km/h)</td></tr>
                 <tr><th scope="row"><kbd>Space</kbd></th><td>Handbrake (the rear can slide)</td></tr>
+                <tr><th scope="row"><kbd>F</kbd></th><td>Jet flight: lift off, optional barrel roll, land (tanks refill in 5 s)</td></tr>
                 <tr><th scope="row"><kbd>K</kbd></th><td>Cruise control on / off; <kbd>[</kbd> <kbd>]</kbd> adjust target</td></tr>
                 <tr><th scope="row"><kbd>C</kbd></th><td>Change camera: chase → hood → overhead</td></tr>
                 <tr><th scope="row"><kbd>R</kbd></th><td>Reset the car onto the track</td></tr>
@@ -440,7 +456,7 @@
             <ul class="plain">
               <li><strong>◀ ▶</strong> large steering buttons, bottom left.</li>
               <li><strong>Gas</strong> and <strong>Brake</strong> pedals, bottom right. Steer and accelerate at the same time with two fingers.</li>
-              <li><strong>D / R</strong> selects reverse when stopped. <strong>HB</strong> is the handbrake.</li>
+              <li><strong>D / R</strong> selects reverse when stopped. <strong>HB</strong> is the handbrake. <strong>JET</strong> launches a jet flight.</li>
               <li>Camera, Reset and Pause are in the top bar.</li>
               <li>Showroom: drag to orbit, pinch to zoom.</li>
             </ul>

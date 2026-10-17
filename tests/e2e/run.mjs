@@ -412,6 +412,26 @@ if (SECTIONS.includes('desktop')) {
     return `throttle=${t}, camera unchanged (${cam})`;
   });
 
+  await check('Drive: jet flight lifts off, rolls once and lands on the road', async () => {
+    await page.evaluate(() => window.roadster.place(window.roadster.startIndex + 40, 0, 0, 25));
+    await page.click('#scene');
+    await page.keyboard.press('KeyF');
+    await until(page, () => window.roadster.flight.airborne, undefined, 60000);
+    await until(page, () => window.roadster.flight.y > 6, undefined, 60000);
+    await page.screenshot({ path: OUT + 'desktop-drive-flight.png' });
+    await until(page, () => !window.roadster.flight.airborne && window.roadster.flight.t < 0, undefined, 90000);
+    const f = await R(page, () => window.roadster.flight);
+    const lat = await R(page, () => window.roadster.lateral);
+    const v = await R(page, () => window.roadster.speedMs * 3.6);
+    const jets = await page.locator('#hud-jets').innerText();
+    assert(f.peak > 7.5 && f.peak < 9 && f.roll === 0 && Math.abs(lat) < 16.1 && v > 60, JSON.stringify({ f, lat, v }));
+    // Tanks must refill before the next flight.
+    await page.keyboard.press('KeyF');
+    const again = await R(page, () => window.roadster.flight.airborne || window.roadster.flight.t >= 0);
+    assert(!again && /s$/.test(jets), `relaunched immediately (${jets})`);
+    return `peak ${f.peak.toFixed(1)} m, landed upright at ${v.toFixed(0)} km/h; HUD jets "${jets}"; second launch blocked while refilling`;
+  });
+
   await check('Frame-rate independence (30 / 60 / 144 fps)', async () => {
     const r = await page.evaluate(() => [30, 60, 144].map((f) => window.roadster.simulateAtFps(f, 6, 1, 0)));
     const d = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
